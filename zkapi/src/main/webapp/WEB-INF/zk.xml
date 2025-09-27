@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<zk xmlns="http://www.zkoss.org/2005/zk">
+  <!-- Optional: đặt tên ứng dụng -->
+  <!--
+  <preference>
+    <name>org.zkoss.zk.ui.WebApp.name</name>
+    <value>zkapi</value>
+  </preference>
+  -->
+</zk>

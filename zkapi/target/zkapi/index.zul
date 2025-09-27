@@ -1,0 +1,29 @@
+<?page title="DocFlow - ZK 7.0.5" contentType="text/html;charset=UTF-8"?>
+<window border="normal" width="520px"
+        apply="org.zkoss.bind.BindComposer"
+        viewModel="@id('vm') @init('com.github.datlaipro.docflow.api.HelloVM')">
+  <vlayout spacing="10px" style="padding:16px">
+    <label value="Demo MVVM - Hệ thống Quản lý Văn bản Đi/Đến (ZK 7.0.5)"/>
+    <separator/>
+
+    <hlayout spacing="8px">
+      <label value="Nhập tên:"/>
+      <textbox value="@bind(vm.name)" placeholder="Your name..." width="240px"/>
+      <button label="Say Hi" onClick="@command('say')" />
+    </hlayout>
+
+    <label value="@load(vm.greeting)" style="font-weight:bold"/>
+
+    <separator/>
+
+    <label value="Thao tác xử lý (giả lập)"/>
+    <hlayout spacing="8px">
+      <button label="Phê duyệt" onClick="@command('approve')" />
+      <button label="Chuyển tiếp" onClick="@command('forward')" />
+      <button label="Từ chối" onClick="@command('reject')" />
+    </hlayout>
+
+    <space height="8px"/>
+    <label style="color:#666" value="Sau khi chạy được màn này là ZK hoạt động OK trong Tomcat container."/>
+  </vlayout>
+</window>
