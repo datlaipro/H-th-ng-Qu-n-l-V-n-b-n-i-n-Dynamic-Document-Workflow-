@@ -1,0 +1,102 @@
+<mat-sidenav-container class="shell">
+  <!-- Sidebar trái -->
+  <mat-sidenav class="sidenav" mode="side" [opened]="sidenavOpened()">
+    <!-- Brand / Tổ chức -->
+    <div class="brand">
+      <div class="brand-logo">FW</div>
+      <div class="brand-info">
+        <div class="brand-name">Hệ thống Văn bản</div>
+        <div class="brand-sub">Phòng Hành chính</div>
+      </div>
+    </div>
+
+    <div class="side-search">
+      <mat-icon>search</mat-icon>
+      <input [formControl]="quickSearch" placeholder="Tìm kiếm..." />
+    </div>
+
+    <mat-nav-list>
+      <div class="group-title">VĂN BẢN</div>
+      <a mat-list-item *ngFor="let m of mainMenus" [routerLink]="m.link">
+        <mat-icon matListItemIcon>{{ m.icon }}</mat-icon>
+        <span matListItemTitle>{{ m.label }}</span>
+      </a>
+
+      <mat-divider></mat-divider>
+      <div class="group-title">LUỒNG XỬ LÝ</div>
+      <a mat-list-item *ngFor="let m of flowMenus" [routerLink]="m.link">
+        <mat-icon matListItemIcon>{{ m.icon }}</mat-icon>
+        <span matListItemTitle>{{ m.label }}</span>
+      </a>
+
+      <mat-divider></mat-divider>
+      <div class="group-title">TIỆN ÍCH</div>
+      <a mat-list-item *ngFor="let m of utilityMenus" [routerLink]="m.link">
+        <mat-icon matListItemIcon>{{ m.icon }}</mat-icon>
+        <span matListItemTitle>{{ m.label }}</span>
+      </a>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <!-- Nội dung + Header xanh -->
+  <mat-sidenav-content class="content">
+    <!-- Header màu xanh (tối giản + canh thẳng nội dung) -->
+    <mat-toolbar class="topbar" color="primary">
+      <div class="topbar-inner">
+        <button mat-icon-button class="only-mobile" (click)="toggleSidenav()" aria-label="Mở menu">
+          <mat-icon>menu</mat-icon>
+        </button>
+
+        <!-- Tiêu đề ngắn (khớp CSS .brand-title) -->
+        <span class="brand-title">Văn bản Đi – Đến</span>
+
+        <!-- Nav cần thiết -->
+        <nav class="nav" aria-label="Điều hướng chính">
+          <a routerLink="/documents?type=den" routerLinkActive="active">Văn bản đến</a>
+          <a routerLink="/documents?type=di" routerLinkActive="active">Văn bản đi</a>
+          <a routerLink="/workflows/submit" routerLinkActive="active">Trình duyệt</a>
+          <a routerLink="/workflows/approve" routerLinkActive="active">Phê duyệt</a>
+          <a routerLink="/workflows/forward" routerLinkActive="active">Chuyển tiếp</a>
+
+          <!-- Gom tiện ích -->
+          <button mat-button class="more-btn" [matMenuTriggerFor]="moreMenu">
+            Tiện ích <mat-icon>expand_more</mat-icon>
+          </button>
+          <mat-menu #moreMenu="matMenu">
+            <button mat-menu-item routerLink="/search"><mat-icon>search</mat-icon><span>Tra cứu/Lọc</span></button>
+            <button mat-menu-item routerLink="/reports"><mat-icon>insights</mat-icon><span>Thống kê</span></button>
+            <button mat-menu-item routerLink="/settings"><mat-icon>settings</mat-icon><span>Cấu hình</span></button>
+          </mat-menu>
+        </nav>
+
+        <span class="spacer"></span>
+
+        <!-- Việc của tôi + User -->
+        <button mat-button class="task-btn" [matBadge]="pendingTasks()" matBadgeOverlap="false" aria-label="Việc của tôi">
+          <mat-icon>assignment_turned_in</mat-icon>
+          <span class="hide-mobile">Việc của tôi</span>
+        </button>
+
+        <button mat-icon-button [matMenuTriggerFor]="usr" aria-label="Tài khoản">
+          <mat-icon>account_circle</mat-icon>
+        </button>
+        <mat-menu #usr="matMenu">
+          <button mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon><span>Hồ sơ</span></button>
+          <button mat-menu-item><mat-icon>logout</mat-icon><span>Đăng xuất</span></button>
+        </mat-menu>
+      </div>
+    </mat-toolbar>
+
+    <!-- Vùng nội dung trang con -->
+    <div class="page">
+      <router-outlet></router-outlet>
+    </div>
+
+    <!-- Footer (tùy chọn) -->
+    <footer class="footer">
+      <span>© 2025 • DMS Văn bản • v1.0.0</span>
+      <span class="spacer"></span>
+      <a routerLink="/help">Hỗ trợ</a><span>•</span><a routerLink="/docs">Tài liệu</a>
+    </footer>
+  </mat-sidenav-content>
+</mat-sidenav-container>

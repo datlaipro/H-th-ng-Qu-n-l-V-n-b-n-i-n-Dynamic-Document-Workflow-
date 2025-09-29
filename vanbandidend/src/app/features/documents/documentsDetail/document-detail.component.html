@@ -1,0 +1,197 @@
+<div class="detail">
+  <!-- Header -->
+  <div class="detail__header">
+    <h2 class="detail__title">{{ data.soVanBan }}</h2>
+
+    <div class="detail__actions">
+      <button mat-raised-button color="primary" (click)="approve()">
+        <mat-icon>check_circle</mat-icon>
+        Phê duyệt
+      </button>
+
+      <button mat-stroked-button (click)="forward()">
+        <mat-icon>redo</mat-icon>
+        Chuyển tiếp
+      </button>
+
+      <button mat-stroked-button (click)="edit()">
+        <mat-icon>edit</mat-icon>
+        Sửa
+      </button>
+
+      <button mat-stroked-button color="warn" (click)="reject()">
+        <mat-icon>cancel</mat-icon>
+        Từ chối
+      </button>
+
+      <button mat-icon-button color="warn" aria-label="Xóa" (click)="remove()">
+        <mat-icon>delete</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Thông tin chung -->
+  <section class="panel">
+    <h3 class="panel__title">
+      <mat-icon class="mr">info</mat-icon> Thông tin chung
+    </h3>
+
+    <div class="info-grid">
+      <!-- Cột trái -->
+      <div class="info-col">
+        <div class="row">
+          <div class="label">Số văn bản:</div>
+          <div class="value linklike">{{ data.soVanBan }}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Nơi nhận:</div>
+          <div class="value linklike">{{ data.noiNhan }}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Người ký:</div>
+          <div class="value linklike">{{ data.nguoiKy }}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Ngày ký:</div>
+          <div class="value linklike">{{ data.ngayKy }}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Bộ phận phát hành:</div>
+          <div class="value linklike">{{ data.boPhanPhatHanh }}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Ngày phát hành:</div>
+          <div class="value linklike">{{ data.ngayPhatHanh }}</div>
+        </div>
+      </div>
+
+      <!-- Cột phải -->
+      <div class="info-col">
+        <div class="row">
+          <div class="label">Số trang:</div>
+          <div class="value linklike">{{ data.soTrang }}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Số lượng văn bản:</div>
+          <div class="value linklike">{{ data.soLuongVanBan }}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Mức độ bảo mật:</div>
+          <div class="value high">{{ data.mucDoBaoMat }}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Mức độ khẩn cấp:</div>
+          <div class="value linklike">{{ data.mucDoKhanCap }}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Ngày hiệu lực:</div>
+          <div class="value linklike">{{ data.ngayHieuLuc }}</div>
+        </div>
+
+        <div class="row">
+          <div class="label">Ngày hết hiệu lực:</div>
+          <div class="value linklike">{{ data.ngayHetHieuLuc }}</div>
+        </div>
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Khối phải: meta bổ sung -->
+    <div class="meta">
+      <div class="row">
+        <div class="label">Loại văn bản</div>
+        <div class="value linklike">{{ data.loaiVanBan }}</div>
+      </div>
+
+      <div class="row">
+        <div class="label">Người xử lý</div>
+        <div class="value">
+          <span class="brand">{{ data.nguoiXuLy }}</span>
+          <a class="muted-action" href="javascript:void(0)">Bạn muốn thay đổi người xử lý?</a>
+        </div>
+      </div>
+
+      <!-- ĐÃ BỎ "Vị trí lưu trữ" & "Người theo dõi" theo yêu cầu -->
+
+      <div class="row">
+        <div class="label">Tình trạng xử lý</div>
+        <div class="value linklike">{{ data.tinhTrangXuLy }}</div>
+      </div>
+
+      <div class="row">
+        <div class="label">Người tạo</div>
+        <div class="value brand">{{ data.nguoiTao }}</div>
+      </div>
+
+      <div class="row">
+        <div class="label">Ngày tạo</div>
+        <div class="value linklike">{{ data.ngayTao }}</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Accordion -->
+  <mat-accordion class="accordion">
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <span>Trích yếu</span>
+      </mat-expansion-panel-header>
+      <div class="panel-body">{{ data.trichYeu || '—' }}</div>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <span>Lý do</span>
+      </mat-expansion-panel-header>
+      <div class="panel-body">{{ data.lyDo || '—' }}</div>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel [expanded]="true">
+      <mat-expansion-panel-header>
+        <span>Tập tin đính kèm ({{ data.attachments?.length || 0 }} tệp)</span>
+      </mat-expansion-panel-header>
+
+      <div class="attachments">
+        <div
+          class="att"
+          *ngFor="let f of data.attachments"
+        >
+          <div class="att__icon">
+            <mat-icon>insert_drive_file</mat-icon>
+          </div>
+          <div class="att__info">
+            <div class="att__name">{{ f.fileName }}</div>
+            <div class="att__meta">
+              {{ f.mimeType }} · {{ prettySize(f.sizeBytes) }}
+            </div>
+          </div>
+          <div class="att__actions">
+            <button mat-stroked-button (click)="download(f)">
+              <mat-icon>download</mat-icon>
+              Tải xuống
+            </button>
+          </div>
+        </div>
+
+        <div class="att__more">
+          <button mat-button type="button">
+            Thêm liên kết
+          </button>
+          <button mat-button type="button">
+            Thêm tệp
+          </button>
+        </div>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>

@@ -1,0 +1,46 @@
+<div class="auth-shell">
+  <div class="login-card">
+    <h1 class="title">Sign in to Clearfreight.</h1>
+
+  
+
+    <form (ngSubmit)="doLogin()" novalidate>
+      <label class="field-label" for="email">Email</label>
+      <input
+        id="email"
+        pInputText
+        class="input pill"
+        type="email"
+        placeholder="Email address"
+        [(ngModel)]="email"
+        name="email"
+        autocomplete="username"
+      />
+
+      <div class="label-row">
+        <label class="field-label" for="password">Password</label>
+        <a class="link small" routerLink="/forgot">Forgot password?</a>
+      </div>
+      <input
+        id="password"
+        pInputText
+        class="input pill"
+        type="password"
+        placeholder="Password"
+        [(ngModel)]="password"
+        name="password"
+        autocomplete="current-password"
+      />
+
+      <div class="error" *ngIf="error">{{ error }}</div>
+
+      <button
+        pButton
+        type="submit"
+        class="btn-primary pill"
+        [disabled]="loading"
+        label="Sign in"
+      ></button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,141 @@
+<!-- Thanh đổi chế độ & bộ lọc -->
+<div class="header-line">
+  <h2>Danh sách văn bản</h2>
+
+  <mat-button-toggle-group [formControl]="viewMode" exclusive>
+    <mat-button-toggle value="list"><mat-icon>view_list</mat-icon> List</mat-button-toggle>
+    <mat-button-toggle value="grid"><mat-icon>grid_view</mat-icon> Grid</mat-button-toggle>
+  </mat-button-toggle-group>
+</div>
+
+<div class="filters">
+  <mat-form-field appearance="outline" class="w-2">
+    <mat-label>Tìm kiếm</mat-label>
+    <input matInput placeholder="Số hiệu, người khởi tạo, trạng thái..." [formControl]="search">
+    <button *ngIf="search.value" matSuffix mat-icon-button (click)="search.setValue('')"><mat-icon>close</mat-icon></button>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-1">
+    <mat-label>Loại văn bản</mat-label>
+    <mat-select [formControl]="loai">
+      <mat-option value="">Tất cả</mat-option>
+      <mat-option value="Đi">Đi</mat-option>
+      <mat-option value="Đến">Đến</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-1">
+    <mat-label>Trạng thái</mat-label>
+    <mat-select [formControl]="trangThai">
+      <mat-option value="">Tất cả</mat-option>
+      <mat-option value="Chờ xử lý">Chờ xử lý</mat-option>
+      <mat-option value="Đang xử lý">Đang xử lý</mat-option>
+      <mat-option value="Hoàn thành">Hoàn thành</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-1">
+    <mat-label>Người khởi tạo</mat-label>
+    <input matInput [formControl]="nguoiKhoiTao" placeholder="Nhập tên...">
+    <button *ngIf="nguoiKhoiTao.value" matSuffix mat-icon-button (click)="nguoiKhoiTao.setValue('')"><mat-icon>close</mat-icon></button>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-1">
+    <mat-label>Từ ngày</mat-label>
+    <input matInput [matDatepicker]="fromPicker" [formControl]="dateFrom">
+    <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+    <mat-datepicker #fromPicker></mat-datepicker>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="w-1">
+    <mat-label>Đến ngày</mat-label>
+    <input matInput [matDatepicker]="toPicker" [formControl]="dateTo">
+    <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+    <mat-datepicker #toPicker></mat-datepicker>
+  </mat-form-field>
+
+  <button mat-stroked-button class="clear-btn" (click)="clearFilters()">
+    <mat-icon>filter_alt_off</mat-icon> Xóa lọc
+  </button>
+</div>
+
+<!-- LIST -->
+<div class="table-wrap" *ngIf="viewMode.value === 'list'">
+  <table mat-table [dataSource]="dataSource" matSort matSortDisableClear>
+    <ng-container matColumnDef="loai">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Loại</th>
+      <td mat-cell *matCellDef="let row">
+        <mat-chip-set class="chip-type">
+          <mat-chip [ngClass]="row.loai === 'Đi' ? 'type-out' : 'type-in'">{{ row.loai }}</mat-chip>
+        </mat-chip-set>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="soHieu">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Số hiệu</th>
+      <td mat-cell *matCellDef="let row">
+        <button class="link" mat-button color="primary" (click)="openDetail(row)">
+          <mat-icon inline>description</mat-icon> {{ row.soHieu }}
+        </button>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="ngay">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Ngày</th>
+      <td mat-cell *matCellDef="let row">
+        <div class="sub">
+          <span class="label">{{ row.loai === 'Đi' ? 'Ngày ban hành' : 'Ngày nhận' }}:</span>
+          <span>{{ getNgayDisplay(row) }}</span>
+        </div>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="nguoiKhoiTao">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Người khởi tạo</th>
+      <td mat-cell *matCellDef="let row">{{ row.nguoiKhoiTao }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="trangThai">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Trạng thái</th>
+      <td mat-cell *matCellDef="let row">
+        <span class="status" [ngClass]="statusClass(row.trangThai)">{{ row.trangThai }}</span>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let row" class="actions">
+        <button mat-icon-button matTooltip="Xem chi tiết" (click)="openDetail(row)">
+          <mat-icon>open_in_new</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+
+  <mat-paginator [pageSize]="10" [pageSizeOptions]="[5,10,20]" showFirstLastButtons></mat-paginator>
+</div>
+
+<!-- GRID -->
+<div class="grid" *ngIf="viewMode.value === 'grid'">
+  <div class="card" *ngFor="let row of dataSource.filteredData">
+    <div class="card-head">
+      <mat-chip-set class="chip-type">
+        <mat-chip [ngClass]="row.loai === 'Đi' ? 'type-out' : 'type-in'">{{ row.loai }}</mat-chip>
+      </mat-chip-set>
+      <span class="status" [ngClass]="statusClass(row.trangThai)">{{ row.trangThai }}</span>
+    </div>
+
+    <div class="kv"><span class="k">Số hiệu</span><span class="v linkish" (click)="openDetail(row)">{{ row.soHieu }}</span></div>
+    <div class="kv"><span class="k">{{ row.loai === 'Đi' ? 'Ngày ban hành' : 'Ngày nhận' }}</span><span class="v">{{ getNgayDisplay(row) }}</span></div>
+    <div class="kv"><span class="k">Người khởi tạo</span><span class="v">{{ row.nguoiKhoiTao }}</span></div>
+
+    <div class="card-actions">
+      <button mat-stroked-button color="primary" (click)="openDetail(row)">
+        <mat-icon>open_in_new</mat-icon> Chi tiết
+      </button>
+    </div>
+  </div>
+</div>

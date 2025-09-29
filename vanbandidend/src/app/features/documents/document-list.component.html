@@ -1,0 +1,102 @@
+<!-- Khung theo layout (.page đã căn giữa & padding) -->
+<div class="list-shell">
+  <h2 class="title">Danh sách văn bản</h2>
+
+  <div class="panel" [class.grid-mode]="viewMode.value === 'grid'">
+    <!-- Actions: List / Grid -->
+    <div class="actions-bar">
+      <mat-button-toggle-group [formControl]="viewMode" exclusive>
+        <mat-button-toggle value="list">
+          <mat-icon>checklist</mat-icon>
+          <span>List</span>
+        </mat-button-toggle>
+        <mat-button-toggle value="grid">
+          <mat-icon>grid_view</mat-icon>
+          <span>Grid</span>
+        </mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+
+    <!-- LIST VIEW -->
+<!-- LIST VIEW (mỗi hàng là một div) -->
+<div class="list" *ngIf="viewMode.value === 'list'">
+
+  <!-- Header -->
+  <div class="list-head">
+    <div class="cell">Loại</div>
+    <div class="cell">Số hiệu</div>
+    <div class="cell">Ngày</div>
+    <div class="cell">Người khởi tạo</div>
+    <div class="cell">Trạng thái</div>
+  </div>
+
+  <!-- Rows -->
+  <div
+    class="list-row"
+    *ngFor="let row of dataSource.filteredData; trackBy: trackById"
+    (click)="open(row.id)"                
+    
+  >
+    <!-- Loại -->
+    <div class="cell">
+      <mat-chip-set class="chip-type">
+        <mat-chip [ngClass]="row.loai === 'Đi' ? 'type-out' : 'type-in'">
+          {{ row.loai }}
+        </mat-chip>
+      </mat-chip-set>
+    </div>
+
+    <!-- Số hiệu -->
+    <div class="cell">
+      <span class="linkish">
+        <mat-icon inline>description</mat-icon>{{ row.soHieu }}
+      </span>
+    </div>
+
+    <!-- Ngày -->
+    <div class="cell">
+      <div class="sub">
+        <span class="label">{{ row.loai === 'Đi' ? 'Ngày ban hành' : 'Ngày nhận' }}:</span>
+        <span>{{ getNgayDisplay(row) }}</span>
+      </div>
+    </div>
+
+    <!-- Người khởi tạo -->
+    <div class="cell">{{ row.nguoiKhoiTao }}</div>
+
+    <!-- Trạng thái -->
+    <div class="cell">
+      <span class="status" [ngClass]="statusClass(row.trangThai)">
+        {{ row.trangThai }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Phân trang (nếu cần) -->
+  <div class="list-paginator">
+    <mat-paginator
+      [pageSize]="10"
+      [pageSizeOptions]="[5,10,20]"
+      showFirstLastButtons
+    ></mat-paginator>
+  </div>
+</div>
+
+
+    <!-- GRID VIEW (chỉ 1 khối này) -->
+    <div class="grid" *ngIf="viewMode.value === 'grid'">
+      <div class="card" *ngFor="let row of dataSource.filteredData">
+        <div class="card-head">
+          <mat-chip-set class="chip-type">
+            <mat-chip [ngClass]="row.loai === 'Đi' ? 'type-out' : 'type-in'">{{ row.loai }}</mat-chip>
+          </mat-chip-set>
+          <span class="status" [ngClass]="statusClass(row.trangThai)">{{ row.trangThai }}</span>
+        </div>
+
+        <div class="kv"><span class="k">Số hiệu</span><span class="v linkish">{{ row.soHieu }}</span></div>
+        <div class="kv"><span class="k">{{ row.loai === 'Đi' ? 'Ngày ban hành' : 'Ngày nhận' }}</span><span class="v">{{ getNgayDisplay(row) }}</span></div>
+        <div class="kv"><span class="k">Người khởi tạo</span><span class="v">{{ row.nguoiKhoiTao }}</span></div>
+      </div>
+    </div>
+  </div>
+</div>
