@@ -28,10 +28,10 @@ export class LoginComponent {
     this.error = '';
     this.loading = true;
 
-    this.auth.login({ username: this.email, password: this.password }).subscribe({
+    this.auth.login({ email: this.email, password: this.password }).subscribe({
       next: (u) => {
         this.auth.user.set(u);
-        this.router.navigateByUrl('/');
+        this.router.navigateByUrl('/documentList');
       },
       error: () => {
         this.error = 'Invalid credentials.';

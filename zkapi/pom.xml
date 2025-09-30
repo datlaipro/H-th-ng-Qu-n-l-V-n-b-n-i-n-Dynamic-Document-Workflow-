@@ -1,108 +1,118 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-	<groupId>com.github.datlaipro</groupId>
-	<artifactId>zkapi</artifactId>
-	<version>1.0.0</version>
-	<packaging>war</packaging>
+  <modelVersion>4.0.0</modelVersion>
 
-	<name>zkapi</name>
-	<description>Document Workflow - ZK 7.0.3</description>
+  <groupId>com.github.datlaipro</groupId>
+  <artifactId>zkapi</artifactId>
+  <version>1.0.0</version>
+  <packaging>war</packaging>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  <name>zkapi</name>
+  <description>Document Workflow - ZK 7.0.3</description>
 
-		<zk.version>7.0.3</zk.version>
-		<commons-io.version>2.11.0</commons-io.version>
-	</properties>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
 
-	<!-- Dùng Maven Central (không cần repositories riêng) -->
+    <zk.version>7.0.3</zk.version>
+    <commons-io.version>2.11.0</commons-io.version>
+    <gson.version>2.10.1</gson.version>
+    <jbcrypt.version>0.4</jbcrypt.version>
 
-	<dependencies>
-		<!-- ZK core + ZUL + MVVM -->
-		<dependency>
-			<groupId>org.zkoss.zk</groupId>
-			<artifactId>zk</artifactId>
-			<version>${zk.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.zkoss.zk</groupId>
-			<artifactId>zul</artifactId>
-			<version>${zk.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.zkoss.zk</groupId>
-			<artifactId>zkbind</artifactId>
-			<version>${zk.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.zkoss.zk</groupId>
-			<artifactId>zhtml</artifactId>
-			<version>${zk.version}</version>
-		</dependency>
-		<!-- (Tuỳ chọn) nếu cần thêm tiện ích -->
-		<!--
+    <!-- MySQL 5.7 dùng Connector/J 5.1.49 -->
+    <mysql.connector.version>5.1.49</mysql.connector.version>
+
+    <servlet.version>3.1.0</servlet.version>
+  </properties>
+
+  <dependencies>
+    <!-- ZK core + ZUL + MVVM -->
     <dependency>
       <groupId>org.zkoss.zk</groupId>
-      <artifactId>zkplus</artifactId>
+      <artifactId>zk</artifactId>
       <version>${zk.version}</version>
     </dependency>
-    -->
+    <dependency>
+      <groupId>org.zkoss.zk</groupId>
+      <artifactId>zul</artifactId>
+      <version>${zk.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.zkoss.zk</groupId>
+      <artifactId>zkbind</artifactId>
+      <version>${zk.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.zkoss.zk</groupId>
+      <artifactId>zhtml</artifactId>
+      <version>${zk.version}</version>
+    </dependency>
 
-		<!-- Upload/IO -->
-		<dependency>
-			<groupId>commons-fileupload</groupId>
-			<artifactId>commons-fileupload</artifactId>
-			<version>1.4</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>${commons-io.version}</version>
-		</dependency>
+    <!-- Upload / IO -->
+    <dependency>
+      <groupId>commons-fileupload</groupId>
+      <artifactId>commons-fileupload</artifactId>
+      <version>1.4</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>${commons-io.version}</version>
+    </dependency>
 
-		<!-- JDBC MySQL 5.7 -->
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.49</version>
-		</dependency>
+    <!-- JDBC MySQL 5.7: Connector/J 5.1.49 -->
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>${mysql.connector.version}</version>
+    </dependency>
 
-		<!-- Servlet API do Tomcat cung cấp -->
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
-			<scope>provided</scope>
-		</dependency>
-	</dependencies>
+    <!-- JSON + BCrypt cho Auth -->
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>${gson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mindrot</groupId>
+      <artifactId>jbcrypt</artifactId>
+      <version>${jbcrypt.version}</version>
+    </dependency>
 
-<build>
-  <finalName>${project.artifactId}</finalName>
-  <plugins>
-    <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-compiler-plugin</artifactId>
-      <version>3.11.0</version>
-      <configuration>
-        <source>1.8</source>
-        <target>1.8</target>
-        <encoding>UTF-8</encoding>
-      </configuration>
-    </plugin>
+    <!-- Servlet API (Tomcat cung cấp) -->
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>${servlet.version}</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
 
-    <plugin>
-      <groupId>org.apache.maven.plugins</groupId>
-      <artifactId>maven-war-plugin</artifactId>
-      <version>3.4.0</version>
-      <configuration>
-        <failOnMissingWebXml>false</failOnMissingWebXml>
-      </configuration>
-    </plugin>
-  </plugins>
-</build>
+  <build>
+    <finalName>${project.artifactId}</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.11.0</version>
+        <configuration>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+          <encoding>UTF-8</encoding>
+        </configuration>
+      </plugin>
 
-
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.4.0</version>
+        <configuration>
+          <failOnMissingWebXml>false</failOnMissingWebXml>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

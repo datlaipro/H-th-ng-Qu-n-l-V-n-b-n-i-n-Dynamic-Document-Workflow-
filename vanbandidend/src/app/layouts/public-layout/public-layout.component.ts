@@ -1,6 +1,7 @@
 import { Component, computed, signal,ViewEncapsulation  } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { RouterLink, RouterOutlet,Router } from '@angular/router';
+import { AuthService } from '../../core/auth/auth.service';
 
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -30,6 +31,7 @@ import { ReactiveFormsModule, FormControl } from '@angular/forms';
 export class PublicLayout {
   // Tìm kiếm nhanh toàn hệ thống (placeholder – tuỳ bạn bind service)
   quickSearch = new FormControl<string>('');
+  constructor(private auth: AuthService, private router: Router) {}
 
   // Menu trái – hiển thị đúng các chức năng bạn yêu cầu
   readonly mainMenus = [
@@ -40,6 +42,7 @@ export class PublicLayout {
     { label: 'Trình duyệt', icon: 'rule_folder', link: '/workflows/submit' },
     { label: 'Phê duyệt', icon: 'task_alt', link: '/workflows/approve' },
     { label: 'Chuyển tiếp', icon: 'forward_to_inbox', link: '/workflows/forward' },
+    { label: 'Thêm nhân viên', icon: 'admin_panel_settings', link: '/workflows/forward' },
   ];
   readonly utilityMenus = [
     { label: 'Tra cứu/Lọc', icon: 'search', link: '/search' },
@@ -54,4 +57,17 @@ export class PublicLayout {
   // Hiển thị badge số việc cần xử lý (demo)
   pendingTasks = signal(3);
   pendingLabel = computed(() => this.pendingTasks() > 0 ? `${this.pendingTasks()} việc` : 'Không có việc');
+
+  logout() {
+     this.auth.logout().subscribe({
+      next: () => {
+        this.auth.user.set(null);
+        this.router.navigateByUrl('/login');
+      },
+      error: () => {
+      
+      },
+    });
+  }
+  
 }

@@ -1,21 +1,51 @@
 // core/auth/auth.service.ts
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { switchMap, tap } from 'rxjs/operators';
 
-export interface SessionUser { id: string; username: string; role: 'EMPLOYEE'|'LEADER'; }
+export type Role = 'EMPLOYEE' | 'LEADER' | 'ADMIN';
+
+export interface SessionUser {
+  id: string;
+  username: string;
+  role: Role; // mở rộng để có ADMIN
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   user = signal<SessionUser | null>(null);
-  private base = '/api/auth';
+  isLoggedIn = computed(() => this.user() !== null);
+
+  private base = 'http://localhost:18080/api/auth';
 
   constructor(private http: HttpClient) {}
 
-  me()     { return this.http.get<SessionUser>(`${this.base}/me`); }
-  login(body: {username:string; password:string}) {
-    return this.http.post<SessionUser>(`${this.base}/login`, body);
+  me() {
+    return this.http.get<SessionUser>(`${this.base}/me`, { withCredentials: true });
   }
-  logout() { return this.http.post<void>(`${this.base}/logout`, {}); }
 
-  hasRole(r: 'EMPLOYEE'|'LEADER') { return this.user()?.role === r; }
+  login(body: { email: string; password: string }) {
+    return this.http.post<{ message: string }>(`${this.base}/login`, body, { withCredentials: true })
+      .pipe(
+        switchMap(() => this.me()),
+        tap(u => this.user.set(u))
+      );
+  }
+
+  logout() {
+    return this.http.post<void>(`${this.base}/logout`, {}, { withCredentials: true })
+      .pipe(tap(() => this.user.set(null)));
+  }
+
+  // check 1 role
+  hasRole(r: Role): boolean {
+    const u = this.user();
+    return !!u && u.role === r;
+  }
+
+  // nếu cần check nhiều role
+  hasAnyRole(...roles: Role[]): boolean {
+    const u = this.user();
+    return !!u && roles.includes(u.role);
+  }
 }

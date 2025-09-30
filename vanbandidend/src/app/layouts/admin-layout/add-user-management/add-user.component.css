@@ -1,0 +1,44 @@
+:root{
+  --bg: #f7f9fc;
+  --surface: #fff;
+  --border: #e2e8f0;
+}
+
+.page{
+  max-width: 680px;
+  padding: 16px clamp(12px, 3vw, 24px);
+  margin: 0 auto;
+  background: var(--bg);
+}
+
+.header{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom: 12px;
+}
+.header h1{ margin:0; font-size:22px; font-weight:800; }
+
+.card.surface{
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(2,6,23,.08), 0 1px 2px rgba(2,6,23,.06);
+  background: var(--surface);
+  padding: 18px;
+}
+
+.grid{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.field { width: 100%; }
+
+.actions{
+  margin-top: 10px;
+  display:flex; gap:10px; justify-content:flex-end;
+}
+
+/* Responsive: nếu embed trong layout có menu trái, form vẫn co giãn đẹp */
+@media (min-width: 720px){
+  .page{ max-width: 720px; }
+}

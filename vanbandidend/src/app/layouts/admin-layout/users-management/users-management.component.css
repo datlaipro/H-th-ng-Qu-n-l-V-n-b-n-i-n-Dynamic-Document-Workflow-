@@ -1,0 +1,137 @@
+/* ==== Theme variables (tăng tương phản) ==== */
+:root {
+  --bg: #f7f9fc;                 /* sáng hơn */
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;          /* header table */
+  --text: #0f172a;               /* đậm */
+  --muted: #64748b;
+  --primary: #5b21b6;            /* tím */
+  --ring: rgba(2, 6, 23, 0.08);  /* shadow */
+  --border: #e2e8f0;
+}
+
+/* Cho phép tự co giãn khi menu trái đóng/mở:
+   Đặt component này trong <mat-sidenav-content> là auto.
+   Phần width dùng clamp + % để co giãn mượt. */
+.page {
+  margin-inline: auto;
+  padding: 16px clamp(12px, 2vw, 20px);
+  max-width: clamp(960px, 92vw, 1240px);
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.header h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+.header-actions { display: flex; gap: 10px; }
+.btn-add { border-radius: 999px; }
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 18px;
+  padding: 14px 0 6px;
+  border-bottom: 1px solid var(--border);
+  margin-top: 8px;
+}
+.tab {
+  background: transparent; border: 0;
+  padding: 8px 6px; font-weight: 700; color: var(--muted);
+  border-bottom: 2px solid transparent; cursor: pointer;
+}
+.tab.active { color: var(--primary); border-color: var(--primary); }
+
+/* Toolbar */
+.toolbar {
+  margin: 14px 0 10px;
+  display: flex; align-items: center; gap: 10px;
+}
+.search { width: clamp(240px, 28vw, 340px); }
+
+/* Card surface (độ nổi) */
+.surface {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+.card-elev {
+  box-shadow: 0 6px 16px var(--ring), 0 1px 2px var(--ring);
+  padding: 6px 8px 8px;
+}
+
+/* Table */
+.users-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+.users-table .mat-mdc-header-row.thead {
+  background: var(--surface-2);
+}
+.users-table th.mat-mdc-header-cell {
+  color: var(--muted);
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+}
+.users-table td.mat-mdc-cell,
+.users-table th.mat-mdc-header-cell {
+  padding-left: 12px; padding-right: 12px;
+}
+
+/* Zebra + hover nổi */
+.trow:nth-child(odd) td { background: #ffffff; }
+.trow:nth-child(even) td { background: #fcfdff; }
+.trow:hover td {
+  background: #eef2ff;           /* xanh nhạt nổi hẳn */
+  transition: background .15s ease;
+}
+
+/* User cell */
+.user-cell { display: flex; align-items: center; gap: 12px; }
+.avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: #e2e8f0; display: grid; place-items: center;
+  font-weight: 800; color: #334155;
+}
+.meta .name { font-weight: 700; }
+.meta .email { color: var(--muted); font-size: 12px; }
+
+/* Status chip (màu tươi, tương phản hơn) */
+.status-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 5px 12px; border-radius: 999px;
+  font-size: 12px; font-weight: 800; letter-spacing: .2px;
+  border: 1px solid transparent;
+}
+.status-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+.status-chip.success { color:#059669; background:#e7f8ef; border-color:#b7eed3; }
+.status-chip.warning { color:#b45309; background:#fff3d6; border-color:#f6d796; }
+.status-chip.hold    { color:#111827; background:#f3f4f6; border-color:#e5e7eb; }
+.status-chip.danger  { color:#dc2626; background:#ffe7e7; border-color:#ffcaca; }
+
+/* Actions */
+.actions { text-align: right; }
+.actions button { margin-left: 4px; }
+
+/* Paginator (cân giữa + sáng hơn) */
+.mdc-data-table__pagination { border-top: 1px solid var(--border); }
+.mat-mdc-paginator { background: transparent; }
+.mat-mdc-paginator .mat-mdc-select-value { font-weight: 600; }
+
+/* Responsive tweaks */
+@media (max-width: 960px) {
+  .header h1 { font-size: 20px; }
+  .search { width: clamp(200px, 50vw, 280px); }
+  .users-table th.mat-mdc-header-cell:nth-child(6),
+  .users-table td.mat-mdc-cell:nth-child(6) { /* ẩn Last Login trên màn nhỏ */
+    display: none;
+  }
+}

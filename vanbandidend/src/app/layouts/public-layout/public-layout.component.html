@@ -82,7 +82,7 @@
         </button>
         <mat-menu #usr="matMenu">
           <button mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon><span>Hồ sơ</span></button>
-          <button mat-menu-item><mat-icon>logout</mat-icon><span>Đăng xuất</span></button>
+          <button  (click)="logout()" mat-menu-item><mat-icon>logout</mat-icon><span>Đăng xuất</span></button >
         </mat-menu>
       </div>
     </mat-toolbar>

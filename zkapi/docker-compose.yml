@@ -1,0 +1,21 @@
+services:
+  zkapi:
+    build:
+      context: .          # thư mục chứa Dockerfile của BE
+      dockerfile: Dockerfile
+    image: zkapi:dev      # tag local sau khi build
+    environment:
+      DB_HOST: mysql_ct
+      DB_PORT: "3306"
+      DB_NAME: docflow
+      DB_USER: root
+      DB_PASS: rootpass
+    ports:
+      - "18080:8080"
+    networks:
+      - docflow-net
+    restart: unless-stopped
+
+networks:
+  docflow-net:
+    external: true
