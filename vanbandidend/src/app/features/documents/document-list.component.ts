@@ -120,7 +120,7 @@ export class DocumentListComponent {
   }
   open(id: number) {
     console.log(id);
-    this.router.navigate(['/DocumentDetail']);
+    this.router.navigate(['/documents/:id']);
   }
   trackById = (_: number, r: any) => r.id ?? r.soHieu;
 }

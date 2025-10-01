@@ -1,0 +1,36 @@
+<div class="page">
+  <mat-card class="card">
+    <div class="icon-wrap">
+      <mat-icon aria-hidden="true">lock</mat-icon>
+    </div>
+
+    <h1 class="title">403 — Không đủ quyền truy cập</h1>
+    <p class="desc">
+      Bạn đã đăng nhập nhưng quyền hiện tại không được phép vào trang này.
+      Nếu bạn nghĩ đây là nhầm lẫn, hãy liên hệ quản trị viên để được cấp quyền phù hợp.
+    </p>
+
+    <div class="actions">
+      <button mat-stroked-button (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>&nbsp;Quay lại
+      </button>
+
+      <button mat-flat-button color="primary" (click)="goHome()">
+        <mat-icon>home</mat-icon>&nbsp;Về trang tài liệu
+      </button>
+
+      <button
+        *ngIf="redirectUrl"
+        mat-button
+        class="try-btn"
+        (click)="tryAgain()"
+        aria-label="Thử lại truy cập">
+        <mat-icon>refresh</mat-icon>&nbsp;Thử lại
+      </button>
+    </div>
+
+    <div class="hint">
+      Mẹo: Nếu vừa được nâng quyền, hãy tải lại trang hoặc đăng xuất – đăng nhập lại.
+    </div>
+  </mat-card>
+</div>

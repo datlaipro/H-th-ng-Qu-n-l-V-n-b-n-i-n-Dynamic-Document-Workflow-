@@ -2,45 +2,65 @@
 import { Routes } from '@angular/router';
 import { PublicLayout } from './layouts/public-layout/public-layout.component';
 import { AuthGuard } from './core/auth/auth-guard';
-import { RoleGuard } from './core/auth/role.guard';
+import { RoleCanMatch } from './core/auth/role.guard';
 
+import { AddUserComponent } from './layouts/admin-layout/add-user-management/add-user.component';
 import { DocumentListComponent } from './features/documents/document-list.component';
 import { IncomingList } from './features/documents/incoming/incoming-list/incoming-list.component';
 import { DocumentDetailComponent } from './features/documents/documentsDetail/document-detail.component';
 import { UsersManagementComponent } from './layouts/admin-layout/users-management/users-management.component';
 
 export const routes: Routes = [
-  // Login không cần guard
+  {
+    path: 'forbidden',
+    loadComponent: () =>
+      import('./features/errors/forbidden.component').then((m) => m.ForbiddenComponent),
+  },
+  // Login (không cần guard)
   {
     path: 'login',
-    loadComponent: () =>
-      import('./features/login/login.component').then(m => m.LoginComponent),
+    loadComponent: () => import('./features/login/login.component').then((m) => m.LoginComponent),
   },
 
-  // Khu vực đã đăng nhập
+  // Khung tổng sau khi đăng nhập
   {
     path: '',
     component: PublicLayout,
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard], // ai đăng nhập cũng vào được layout này
     children: [
-      // Đổi redirect về route có thật
-      { path: '', redirectTo: 'document-list', pathMatch: 'full' },
+      // mặc định về khu user
+      { path: '', pathMatch: 'full', redirectTo: 'document-list' },
 
+      // ==== USER ZONE (mọi role đã đăng nhập) ====
       { path: 'document-list', component: DocumentListComponent },
       { path: 'incoming-list', component: IncomingList },
-      // nếu detail có id, nên để '/documents/:id'
       { path: 'documents/:id', component: DocumentDetailComponent },
 
-      // Users đặt ĐÚNG bên trong children
+      // ==== ADMIN ZONE (LEADER/ADMIN) ====
       {
-        path: 'admin/create-user',
-        component: UsersManagementComponent,
-        canActivate: [RoleGuard],
-        data: { roles: ['LEADER', 'ADMIN'] },
+        path: 'admin',
+        canMatch: [RoleCanMatch], // <-- kiểm tra role 1 lần tại parent
+        data: { roles: ['LEADER', 'ADMIN'] }, // <-- cấu hình role ở parent
+        children: [
+          { path: 'document-list', component: DocumentListComponent },
+
+          { path: 'list-user', component: UsersManagementComponent },
+          { path: 'create-user', component: AddUserComponent },
+          // Thêm route admin khác ở đây, KHÔNG cần lặp guard:
+          // { path: 'users', component: AdminUsersComponent },
+          // { path: 'settings', component: AdminSettingsComponent },
+        ],
       },
+
+      // (Tuỳ chọn) trang 403 nếu role không đủ
+      // {
+      //   path: 'forbidden',
+      //   loadComponent: () =>
+      //     import('./features/errors/forbidden.component').then(m => m.ForbiddenComponent),
+      // },
     ],
   },
 
   // Fallback
-  { path: '**', redirectTo: 'login' },
+  { path: '**', redirectTo: '' },
 ];

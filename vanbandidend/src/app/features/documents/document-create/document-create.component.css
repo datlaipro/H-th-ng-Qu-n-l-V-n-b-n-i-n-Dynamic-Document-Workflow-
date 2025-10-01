@@ -1,0 +1,43 @@
+:root{
+  --gap: 16px;
+  --teal: #14b8a6;
+  --border: #e5e7eb;
+}
+
+.shell{
+  display:flex; justify-content:center; padding:24px;
+}
+.card{
+  width: clamp(720px, 72vw, 1120px);
+  background:#fff; border:1px solid var(--border);
+  border-radius:16px; padding:20px 20px 24px;
+  box-shadow: 0 8px 30px rgba(2,6,23,.06);
+}
+.card-head{
+  display:flex; align-items:baseline; gap:12px; margin-bottom:12px;
+}
+.card-head h2{ margin:0; font-weight:700; }
+.card-head .hint{ color:#6b7280; font-size:13px; }
+
+.form-grid{
+  display:grid; grid-template-columns: repeat(2, 1fr);
+  gap: var(--gap);
+}
+.form-grid .full{ grid-column: 1 / -1; }
+mat-form-field{ width:100%; }
+
+.files{ display:flex; flex-direction:column; gap:12px; }
+.files-head{
+  display:flex; align-items:center; justify-content:space-between;
+}
+.files-head h3{ margin:0; font-size:16px; font-weight:600; }
+.chips{ padding:4px 0; }
+
+.actions{
+  display:flex; gap:12px; justify-content:flex-end; margin-top:4px;
+}
+
+/* Responsive khi thu hẹp hoặc co sidebar: card co giãn theo width cha */
+@media (max-width: 920px){
+  .form-grid{ grid-template-columns: 1fr; }
+}

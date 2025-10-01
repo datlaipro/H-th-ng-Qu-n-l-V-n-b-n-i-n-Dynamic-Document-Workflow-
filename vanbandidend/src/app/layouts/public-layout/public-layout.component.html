@@ -15,27 +15,52 @@
       <input [formControl]="quickSearch" placeholder="Tìm kiếm..." />
     </div>
 
-    <mat-nav-list>
-      <div class="group-title">VĂN BẢN</div>
-      <a mat-list-item *ngFor="let m of mainMenus" [routerLink]="m.link">
-        <mat-icon matListItemIcon>{{ m.icon }}</mat-icon>
-        <span matListItemTitle>{{ m.label }}</span>
-      </a>
+    <mat-nav-list class="side-navlist">
+  <div class="group-title">VĂN BẢN</div>
+  <button
+    mat-list-item
+    class="nav-btn"
+    type="button"
+    *ngFor="let m of mainMenus"
+    (click)="go(m.link)"
+    [class.is-active]="isActive(m.link)"
+    [disableRipple]="true"
+  >
+    <mat-icon matListItemIcon>{{ m.icon }}</mat-icon>
+    <span matListItemTitle>{{ m.label }}</span>
+  </button>
 
-      <mat-divider></mat-divider>
-      <div class="group-title">LUỒNG XỬ LÝ</div>
-      <a mat-list-item *ngFor="let m of flowMenus" [routerLink]="m.link">
-        <mat-icon matListItemIcon>{{ m.icon }}</mat-icon>
-        <span matListItemTitle>{{ m.label }}</span>
-      </a>
+  <mat-divider></mat-divider>
+  <div class="group-title">LUỒNG XỬ LÝ</div>
+  <button
+    mat-list-item
+    class="nav-btn"
+    type="button"
+    *ngFor="let m of flowMenus"
+    (click)="go(m.link)"
+    [class.is-active]="isActive(m.link)"
+    [disableRipple]="true"
+  >
+    <mat-icon matListItemIcon>{{ m.icon }}</mat-icon>
+    <span matListItemTitle>{{ m.label }}</span>
+  </button>
 
-      <mat-divider></mat-divider>
-      <div class="group-title">TIỆN ÍCH</div>
-      <a mat-list-item *ngFor="let m of utilityMenus" [routerLink]="m.link">
-        <mat-icon matListItemIcon>{{ m.icon }}</mat-icon>
-        <span matListItemTitle>{{ m.label }}</span>
-      </a>
-    </mat-nav-list>
+  <mat-divider></mat-divider>
+  <div class="group-title">TIỆN ÍCH</div>
+  <button
+    mat-list-item
+    class="nav-btn"
+    type="button"
+    *ngFor="let m of utilityMenus"
+    (click)="go(m.link)"
+    [class.is-active]="isActive(m.link)"
+    [disableRipple]="true"
+  >
+    <mat-icon matListItemIcon>{{ m.icon }}</mat-icon>
+    <span matListItemTitle>{{ m.label }}</span>
+  </button>
+</mat-nav-list>
+
   </mat-sidenav>
 
   <!-- Nội dung + Header xanh -->
@@ -63,16 +88,28 @@
             Tiện ích <mat-icon>expand_more</mat-icon>
           </button>
           <mat-menu #moreMenu="matMenu">
-            <button mat-menu-item routerLink="/search"><mat-icon>search</mat-icon><span>Tra cứu/Lọc</span></button>
-            <button mat-menu-item routerLink="/reports"><mat-icon>insights</mat-icon><span>Thống kê</span></button>
-            <button mat-menu-item routerLink="/settings"><mat-icon>settings</mat-icon><span>Cấu hình</span></button>
+            <button mat-menu-item routerLink="/search">
+              <mat-icon>search</mat-icon><span>Tra cứu/Lọc</span>
+            </button>
+            <button mat-menu-item routerLink="/reports">
+              <mat-icon>insights</mat-icon><span>Thống kê</span>
+            </button>
+            <button mat-menu-item routerLink="/settings">
+              <mat-icon>settings</mat-icon><span>Cấu hình</span>
+            </button>
           </mat-menu>
         </nav>
 
         <span class="spacer"></span>
 
         <!-- Việc của tôi + User -->
-        <button mat-button class="task-btn" [matBadge]="pendingTasks()" matBadgeOverlap="false" aria-label="Việc của tôi">
+        <button
+          mat-button
+          class="task-btn"
+          [matBadge]="pendingTasks()"
+          matBadgeOverlap="false"
+          aria-label="Việc của tôi"
+        >
           <mat-icon>assignment_turned_in</mat-icon>
           <span class="hide-mobile">Việc của tôi</span>
         </button>
@@ -81,8 +118,12 @@
           <mat-icon>account_circle</mat-icon>
         </button>
         <mat-menu #usr="matMenu">
-          <button mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon><span>Hồ sơ</span></button>
-          <button  (click)="logout()" mat-menu-item><mat-icon>logout</mat-icon><span>Đăng xuất</span></button >
+          <button mat-menu-item routerLink="/profile">
+            <mat-icon>person</mat-icon><span>Hồ sơ</span>
+          </button>
+          <button (click)="logout()" mat-menu-item>
+            <mat-icon>logout</mat-icon><span>Đăng xuất</span>
+          </button>
         </mat-menu>
       </div>
     </mat-toolbar>
@@ -93,10 +134,6 @@
     </div>
 
     <!-- Footer (tùy chọn) -->
-    <footer class="footer">
-      <span>© 2025 • DMS Văn bản • v1.0.0</span>
-      <span class="spacer"></span>
-      <a routerLink="/help">Hỗ trợ</a><span>•</span><a routerLink="/docs">Tài liệu</a>
-    </footer>
+
   </mat-sidenav-content>
 </mat-sidenav-container>

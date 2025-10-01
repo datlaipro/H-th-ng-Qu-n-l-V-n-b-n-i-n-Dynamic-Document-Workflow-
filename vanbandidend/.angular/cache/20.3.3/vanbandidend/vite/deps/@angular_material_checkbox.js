@@ -7,10 +7,10 @@ import {
 import {
   _StructuralStylesLoader
 } from "./chunk-RE36CWXH.js";
-import "./chunk-GWFLKVBH.js";
 import {
   _animationsDisabled
 } from "./chunk-IN4Y7VOK.js";
+import "./chunk-GWFLKVBH.js";
 import "./chunk-BWYTSKM5.js";
 import "./chunk-7UJZXIJQ.js";
 import {
@@ -75,8 +75,8 @@ import {
   ɵɵrestoreView,
   ɵɵviewQuery
 } from "./chunk-YO6GPXUM.js";
-import "./chunk-JRFR6BLO.js";
 import "./chunk-HWYXSU2G.js";
+import "./chunk-JRFR6BLO.js";
 import "./chunk-MARUHEWW.js";
 import "./chunk-WDMUDEB6.js";
 

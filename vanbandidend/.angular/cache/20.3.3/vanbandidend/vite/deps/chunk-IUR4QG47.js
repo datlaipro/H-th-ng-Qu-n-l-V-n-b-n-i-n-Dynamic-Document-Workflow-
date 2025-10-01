@@ -1,4 +1,10 @@
 import {
+  ArrayDataSource,
+  _RecycleViewRepeaterStrategy,
+  _VIEW_REPEATER_STRATEGY,
+  isDataSource
+} from "./chunk-6TU72PAN.js";
+import {
   RtlScrollAxisType,
   getRtlScrollAxisType,
   supportsScrollBehavior
@@ -12,12 +18,6 @@ import {
   coerceElement,
   coerceNumberProperty
 } from "./chunk-7UIXWPLT.js";
-import {
-  ArrayDataSource,
-  _RecycleViewRepeaterStrategy,
-  _VIEW_REPEATER_STRATEGY,
-  isDataSource
-} from "./chunk-6TU72PAN.js";
 import {
   ApplicationRef,
   ChangeDetectionStrategy,
@@ -1590,4 +1590,4 @@ export {
   CdkScrollableModule,
   ScrollingModule
 };
-//# sourceMappingURL=chunk-LI7N2XKF.js.map
+//# sourceMappingURL=chunk-IUR4QG47.js.map

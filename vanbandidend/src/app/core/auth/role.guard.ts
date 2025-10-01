@@ -1,13 +1,30 @@
-import { CanActivateFn, ActivatedRouteSnapshot, Router } from '@angular/router';
+// core/auth/role.guard.ts
 import { inject } from '@angular/core';
+import { CanMatchFn, Route, UrlSegment, Router, UrlTree } from '@angular/router';
 import { AuthService } from './auth.service';
-// Đây là Route Guard theo vai trò. Nó chặn/cho phép truy cập một route dựa trên role của user hiện tại.
-export const RoleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
-  const auth = inject(AuthService);
+
+export const RoleCanMatch: CanMatchFn = (
+  route: Route,
+  segments: UrlSegment[]
+): boolean | UrlTree => {
   const router = inject(Router);
+  const auth   = inject(AuthService);
+
   const roles = route.data?.['roles'] as string[] | undefined;
-  if (!roles) return true;// không có roles nào được yêu cầu, cho qua
-  const u = auth.user();// lấy user hiện tại từ AuthService
-  if (u && roles.includes(u.role)) return true;// user có role phù hợp, cho qua
-  router.navigateByUrl('/'); return false;
+  const u = auth.user(); // SessionUser | null (signal getter)
+
+  // 1) Chưa đăng nhập -> về /login + redirect
+  if (!u) {
+    const target = '/' + segments.map(s => s.path).join('/');
+    return router.createUrlTree(['/login'], { queryParams: { redirect: target } });
+  }
+
+  // 2) Không yêu cầu role -> cho qua
+  if (!roles || roles.length === 0) return true;
+
+  // 3) Có yêu cầu role -> kiểm tra
+  if (roles.includes(u.role)) return true;
+
+  // 4) Sai role -> về /forbidden (hoặc trang bạn muốn)
+  return router.createUrlTree(['/forbidden']);
 };

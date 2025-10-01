@@ -36,6 +36,12 @@ export class AuthService {
     return this.http.post<void>(`${this.base}/logout`, {}, { withCredentials: true })
       .pipe(tap(() => this.user.set(null)));
   }
+createUser(body: { email: string; password: string }) {
+  // chú ý: 1 dấu /, truyền body là tham số thứ 2, options là tham số thứ 3
+  return this.http.post<SessionUser>(`${this.base}/register`, body, {
+    withCredentials: true,
+  });
+}
 
   // check 1 role
   hasRole(r: Role): boolean {

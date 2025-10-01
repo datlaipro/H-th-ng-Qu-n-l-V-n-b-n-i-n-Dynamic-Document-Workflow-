@@ -6,10 +6,37 @@
   <mat-card class="card surface">
     <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
       <div class="grid">
+        <!-- Username -->
+        <mat-form-field appearance="outline" class="field">
+          <mat-label>Username</mat-label>
+          <input
+            matInput
+            type="text"
+            placeholder="username"
+            formControlName="username"
+            autocomplete="username"
+          />
+          <mat-icon matSuffix>person</mat-icon>
+          <mat-hint align="start">3–24 ký tự: chữ, số, . _ -</mat-hint>
+
+          <mat-error *ngIf="f.username.touched && f.username.hasError('required')">
+            Vui lòng nhập username
+          </mat-error>
+          <mat-error *ngIf="f.username.touched && f.username.hasError('minlength')">
+            Tối thiểu 3 ký tự
+          </mat-error>
+          <mat-error *ngIf="f.username.touched && f.username.hasError('maxlength')">
+            Tối đa 24 ký tự
+          </mat-error>
+          <mat-error *ngIf="f.username.touched && f.username.hasError('pattern')">
+            Chỉ cho phép chữ, số, dấu chấm (.), gạch dưới (_), gạch ngang (-)
+          </mat-error>
+        </mat-form-field>
+
         <!-- Email -->
         <mat-form-field appearance="outline" class="field">
           <mat-label>Email</mat-label>
-          <input matInput type="email" placeholder="name@example.com" formControlName="email" />
+          <input matInput type="email" placeholder="name@example.com" formControlName="email" autocomplete="email" />
           <mat-icon matSuffix>alternate_email</mat-icon>
           <mat-hint align="start">Dùng email công ty nếu có.</mat-hint>
           <mat-error *ngIf="f.email.touched && f.email.hasError('required')">
@@ -23,7 +50,7 @@
         <!-- Password -->
         <mat-form-field appearance="outline" class="field">
           <mat-label>Mật khẩu</mat-label>
-          <input matInput [type]="hide() ? 'password' : 'text'" formControlName="password" />
+          <input matInput [type]="hide() ? 'password' : 'text'" formControlName="password" autocomplete="new-password" />
           <button mat-icon-button type="button" matSuffix (click)="hide.set(!hide())" [attr.aria-label]="'Toggle password'">
             <mat-icon>{{ hide() ? 'visibility' : 'visibility_off' }}</mat-icon>
           </button>

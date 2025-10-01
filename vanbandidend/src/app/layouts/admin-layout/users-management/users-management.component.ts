@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { RouterLink } from '@angular/router';
 import { ViewChild } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -115,6 +116,7 @@ const MOCK_DATA: UserRow[] = [
   selector: 'app-users-management',
   standalone: true,
   imports: [
+    RouterLink,
     CommonModule,
     MatTableModule,
     MatSortModule,
@@ -200,9 +202,7 @@ export class UsersManagementComponent {
   }
 
   /** Actions (mock) */
-  addUser() {
-    alert('Add New User clicked');
-  }
+
   exportCsv() {
     alert('Export clicked');
   }

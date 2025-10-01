@@ -1,6 +1,6 @@
 import { Component, computed, signal,ViewEncapsulation  } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterOutlet,Router } from '@angular/router';
+import { RouterLink, RouterOutlet,Router,RouterLinkActive ,IsActiveMatchOptions  } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -18,7 +18,7 @@ import { ReactiveFormsModule, FormControl } from '@angular/forms';
   selector: 'app-public-layout',
   standalone: true,
   imports: [
-    CommonModule, RouterOutlet, RouterLink,
+    CommonModule, RouterOutlet, RouterLink,RouterLinkActive ,
     MatSidenavModule, MatToolbarModule, MatListModule,
     MatIconModule, MatButtonModule, MatMenuModule,
     MatDividerModule, MatInputModule, MatBadgeModule,
@@ -42,7 +42,9 @@ export class PublicLayout {
     { label: 'Trình duyệt', icon: 'rule_folder', link: '/workflows/submit' },
     { label: 'Phê duyệt', icon: 'task_alt', link: '/workflows/approve' },
     { label: 'Chuyển tiếp', icon: 'forward_to_inbox', link: '/workflows/forward' },
-    { label: 'Thêm nhân viên', icon: 'admin_panel_settings', link: '/workflows/forward' },
+      { label: 'Thêm nhân viên', icon: 'admin_panel_settings', link: '/admin/create-user' },
+      { label: 'Danh sách nhân viên', icon: 'groups', link: '/admin/list-user' },
+      { label: 'Danh sách văn bản', icon: 'article', link: '/document-list' },
   ];
   readonly utilityMenus = [
     { label: 'Tra cứu/Lọc', icon: 'search', link: '/search' },
@@ -69,5 +71,16 @@ export class PublicLayout {
       },
     });
   }
+  private readonly exact: IsActiveMatchOptions = {
+  paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored'
+};
+
+go(link: string) {
+  this.router.navigateByUrl(link);
+}
+
+isActive(link: string) {
+  return this.router.isActive(link, this.exact);
+}
   
 }

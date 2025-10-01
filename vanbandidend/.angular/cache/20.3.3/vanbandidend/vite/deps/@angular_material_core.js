@@ -1,4 +1,7 @@
 import {
+  _MatInternalFormField
+} from "./chunk-2LLQRHL6.js";
+import {
   DateAdapter,
   MAT_DATE_FORMATS,
   MAT_DATE_LOCALE,
@@ -15,6 +18,9 @@ import {
   _getOptionScrollPosition
 } from "./chunk-ULQTGYSH.js";
 import {
+  MatRippleLoader
+} from "./chunk-6FERBEST.js";
+import {
   ErrorStateMatcher,
   ShowOnDirtyErrorStateMatcher,
   _ErrorStateTracker
@@ -26,14 +32,8 @@ import {
   MatPseudoCheckbox
 } from "./chunk-KZREBLI6.js";
 import {
-  MatRippleLoader
-} from "./chunk-6FERBEST.js";
-import {
   MatRippleModule
 } from "./chunk-XPAA4KJR.js";
-import {
-  _MatInternalFormField
-} from "./chunk-2LLQRHL6.js";
 import {
   MAT_RIPPLE_GLOBAL_OPTIONS,
   MatRipple,
@@ -45,7 +45,6 @@ import {
 import {
   _StructuralStylesLoader
 } from "./chunk-RE36CWXH.js";
-import "./chunk-GWFLKVBH.js";
 import {
   AnimationCurves,
   AnimationDurations,
@@ -53,6 +52,7 @@ import {
   _animationsDisabled,
   _getAnimationsState
 } from "./chunk-IN4Y7VOK.js";
+import "./chunk-GWFLKVBH.js";
 import "./chunk-BWYTSKM5.js";
 import "./chunk-7UJZXIJQ.js";
 import {
@@ -76,8 +76,8 @@ import {
   ɵɵdefineInjector,
   ɵɵdefineNgModule
 } from "./chunk-YO6GPXUM.js";
-import "./chunk-JRFR6BLO.js";
 import "./chunk-HWYXSU2G.js";
+import "./chunk-JRFR6BLO.js";
 import {
   startWith
 } from "./chunk-MARUHEWW.js";

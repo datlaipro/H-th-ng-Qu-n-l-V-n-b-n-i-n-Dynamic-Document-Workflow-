@@ -7,6 +7,9 @@ import {
   MatDividerModule
 } from "./chunk-3Z2KM6UE.js";
 import {
+  SelectionModel
+} from "./chunk-JUXWT4HP.js";
+import {
   MatRippleModule
 } from "./chunk-XPAA4KJR.js";
 import {
@@ -17,11 +20,12 @@ import {
   _StructuralStylesLoader
 } from "./chunk-RE36CWXH.js";
 import {
-  coerceBooleanProperty
-} from "./chunk-GWFLKVBH.js";
-import {
   _animationsDisabled
 } from "./chunk-IN4Y7VOK.js";
+import {
+  coerceBooleanProperty
+} from "./chunk-GWFLKVBH.js";
+import "./chunk-6TU72PAN.js";
 import "./chunk-BWYTSKM5.js";
 import "./chunk-7UJZXIJQ.js";
 import {
@@ -43,10 +47,6 @@ import {
   Platform,
   coerceNumberProperty
 } from "./chunk-7UIXWPLT.js";
-import {
-  SelectionModel
-} from "./chunk-JUXWT4HP.js";
-import "./chunk-6TU72PAN.js";
 import {
   NG_VALUE_ACCESSOR
 } from "./chunk-LEAHLM6I.js";
@@ -109,10 +109,10 @@ import {
   ɵɵtemplateRefExtractor,
   ɵɵviewQuery
 } from "./chunk-YO6GPXUM.js";
-import "./chunk-JRFR6BLO.js";
 import {
   merge
 } from "./chunk-HWYXSU2G.js";
+import "./chunk-JRFR6BLO.js";
 import {
   Subject,
   Subscription,
