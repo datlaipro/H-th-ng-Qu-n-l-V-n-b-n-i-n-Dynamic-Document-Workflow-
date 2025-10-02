@@ -58,10 +58,19 @@
     <filter-class>com.github.datlaipro.docflow.api.web.AuthFilter</filter-class>
   </filter>
   <filter-mapping>
-  <filter-name>AuthFilter</filter-name>
-  <url-pattern>/api/*</url-pattern>
-  <dispatcher>REQUEST</dispatcher>
-</filter-mapping>
+    <filter-name>AuthFilter</filter-name>
+    <url-pattern>/api/*</url-pattern>
+    <dispatcher>REQUEST</dispatcher>
+  </filter-mapping>
+  <filter>
+    <filter-name>GlobalErrorFilter</filter-name>
+    <filter-class>com.github.datlaipro.docflow.api.shared.web.GlobalErrorFilter</filter-class>
+  </filter>
+  <filter-mapping>
+    <filter-name>GlobalErrorFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
 
   <!-- Login -->
   <servlet>

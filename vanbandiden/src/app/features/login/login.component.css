@@ -1,0 +1,115 @@
+:root {
+  --ink: #111827;
+  --muted: #6b7280;
+  --surface: #ffffff;
+  --bg: #f6f7fb;
+  --brand: #5b6cf2;
+  --shadow: 0 12px 30px rgba(17, 24, 39, .06);
+}
+
+/* Nền trang + căn giữa */
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  padding: 32px 16px;
+  color: var(--ink);
+  font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+/* CARD */
+.login-card {
+  width: min(520px, 92vw);
+  background: var(--surface);
+  border: 2px solid gray;        /* đường viền khung theo mẫu bạn */
+  border-radius: 30px;
+  box-shadow: var(--shadow);
+  padding: 28px;
+}
+
+/* Typography */
+.title {
+  margin: 0 0 8px;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.link {
+  color: #5b6cf2;
+  text-decoration: none;
+  font-weight: 600;
+}
+.link:hover { text-decoration: underline; }
+.link.small { font-size: 13px; }
+
+/* Nhãn & hàng nhãn */
+.field-label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin: 12px 0 6px;
+}
+.label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+/* Field wrapper */
+.field {
+  width: 100%;
+}
+
+/* Làm form-field dạng “pill” (bo tròn) và cao 48px */
+.pill-field .mat-mdc-text-field-wrapper {
+  border-radius: 9999px;
+  height: 48px;
+  padding-right: 6px; /* chừa chỗ nhỏ cho nút icon */
+}
+
+/* Bo tròn phần outline */
+.pill-field .mdc-notched-outline__leading,
+.pill-field .mdc-notched-outline__trailing,
+.pill-field .mdc-notched-outline__notch {
+  border-radius: 9999px;
+}
+
+/* Thu gọn khoảng trống label notch khi không dùng label nổi */
+.pill-field .mat-mdc-form-field-infix {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Input bên trong cho cảm giác “pill” */
+.pill-field input[matInput] {
+  height: 48px;
+  line-height: 48px;
+  padding: 0 14px;
+}
+
+/* Nút mắt căn giữa chuẩn theo suffix (không cần absolute) */
+.pill-field .mat-mdc-form-field-icon-suffix .mat-mdc-icon-button {
+  margin-right: 4px; /* nhích vào trong một chút */
+}
+
+/* Nút submit bo tròn */
+.btn-primary.pill {
+  width: 100%;
+  margin-top: 18px;
+  border-radius: 9999px;
+  font-weight: 700;
+  background-color:rgb(210, 205, 205);
+  color:blue;
+}
+.btn-primary.pill:hover { filter: brightness(0.95); }
+
+/* Lỗi nhỏ dưới input */
+.error {
+  margin-top: 8px;
+  color: #d32f2f;
+  font-size: 13px;
+}
+

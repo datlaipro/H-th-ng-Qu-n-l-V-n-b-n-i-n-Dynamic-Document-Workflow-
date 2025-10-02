@@ -1,0 +1,71 @@
+<div class="auth-shell">
+  <mat-card class="login-card">
+    <h1 class="title">Sign in to Clearfreight.</h1>
+
+    <form (ngSubmit)="doLogin()" novalidate>
+      <!-- Email -->
+      <label class="field-label" for="email">Email</label>
+      <mat-form-field appearance="outline" class="field pill-field">
+        <input
+          matInput
+          id="email"
+          type="email"
+          placeholder="Email address"
+          [(ngModel)]="email"
+          name="email"
+          autocomplete="username"
+          [disabled]="loading"
+          required
+        />
+      </mat-form-field>
+
+      <!-- Password label + link -->
+      <div class="label-row">
+        <label class="field-label" for="password">Password</label>
+        <a class="link small" routerLink="/forgot">Forgot password?</a>
+      </div>
+
+      <!-- Password with eye -->
+      <mat-form-field appearance="outline" class="field pill-field">
+        <input
+          matInput
+          id="password"
+          [type]="showPassword ? 'text' : 'password'"
+          placeholder="Password"
+          [(ngModel)]="password"
+          name="password"
+          autocomplete="current-password"
+          [disabled]="loading"
+          required
+        />
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="togglePassword()"
+          [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+          [attr.title]="showPassword ? 'Hide password' : 'Show password'"
+          [disabled]="loading"
+        >
+          <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </mat-form-field>
+
+      <!-- Error zone -->
+      <div class="error" *ngIf="error" role="alert" aria-live="assertive">
+        {{ error }}
+        <ng-container *ngIf="retryAfterText"> · Try again {{ retryAfterText }}. </ng-container>
+      </div>
+
+      <button
+        mat-raised-button
+        color="primary"
+        class="btn-primary pill"
+        type="submit"
+        [disabled]="loading"
+      >
+        {{ loading ? 'Signing in…' : 'Sign in' }}
+      </button>
+    </form>
+  </mat-card>
+</div>
