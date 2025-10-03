@@ -1,31 +1,31 @@
 import {
   _DisposeViewRepeaterStrategy
-} from "./chunk-JUXWT4HP.js";
+} from "./chunk-YQTMVYBE.js";
 import {
   ScrollingModule,
   ViewportRuler
-} from "./chunk-IUR4QG47.js";
+} from "./chunk-UG4MMN2M.js";
 import {
   DataSource,
   _RecycleViewRepeaterStrategy,
   _VIEW_REPEATER_STRATEGY,
   _ViewRepeaterOperation,
   isDataSource
-} from "./chunk-6TU72PAN.js";
+} from "./chunk-RMFGBTI6.js";
 import "./chunk-GWFLKVBH.js";
 import "./chunk-7UJZXIJQ.js";
 import {
   MatCommonModule
-} from "./chunk-PYRXKDKB.js";
-import "./chunk-M6CEXJ5E.js";
+} from "./chunk-MHYSEQK5.js";
+import "./chunk-2WBYOXEK.js";
 import {
   Directionality
-} from "./chunk-BRGVXSCV.js";
+} from "./chunk-B6Q77AK3.js";
 import {
   Platform,
   _isNumberValue
-} from "./chunk-7UIXWPLT.js";
-import "./chunk-YG47VFKR.js";
+} from "./chunk-J2CJJ44I.js";
+import "./chunk-QCDBD2C7.js";
 import "./chunk-4X6VR2I6.js";
 import {
   ChangeDetectionStrategy,
@@ -33,13 +33,10 @@ import {
   Component,
   ContentChild,
   ContentChildren,
-  DOCUMENT,
   Directive,
   ElementRef,
   EventEmitter,
   HostAttributeToken,
-  InjectionToken,
-  Injector,
   Input,
   IterableDiffers,
   NgModule,
@@ -50,7 +47,6 @@ import {
   ViewEncapsulation,
   afterNextRender,
   booleanAttribute,
-  inject,
   setClassMetadata,
   ɵɵInheritDefinitionFeature,
   ɵɵNgOnChangesFeature,
@@ -62,7 +58,6 @@ import {
   ɵɵcontentQuery,
   ɵɵdefineComponent,
   ɵɵdefineDirective,
-  ɵɵdefineInjector,
   ɵɵdefineNgModule,
   ɵɵelementContainer,
   ɵɵelementContainerEnd,
@@ -80,12 +75,19 @@ import {
   ɵɵtext,
   ɵɵtextInterpolate1,
   ɵɵviewQuery
-} from "./chunk-YO6GPXUM.js";
-import "./chunk-JRFR6BLO.js";
+} from "./chunk-SYQEHEBD.js";
+import {
+  DOCUMENT,
+  InjectionToken,
+  Injector,
+  inject,
+  ɵɵdefineInjector
+} from "./chunk-5YKDIGWC.js";
 import {
   isObservable,
   merge
 } from "./chunk-HWYXSU2G.js";
+import "./chunk-JRFR6BLO.js";
 import {
   BehaviorSubject,
   Subject,

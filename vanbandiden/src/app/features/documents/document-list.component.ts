@@ -118,9 +118,11 @@ export class DocumentListComponent {
   statusClass(st: DocStatus): string {
     return st === 'Chờ xử lý' ? 'st-wait' : st === 'Đang xử lý' ? 'st-doing' : 'st-done';
   }
-  open(id: number) {
-    console.log(id);
-    this.router.navigate(['/documents/:id']);
-  }
+open(id: number) {
+  this.router.navigate([`/documents/${id}`]);
+}
   trackById = (_: number, r: any) => r.id ?? r.soHieu;
+  createNew() {
+  this.router.navigate(['/documents/new']);
+}
 }

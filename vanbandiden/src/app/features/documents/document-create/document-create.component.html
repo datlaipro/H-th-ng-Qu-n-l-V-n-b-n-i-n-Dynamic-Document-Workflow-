@@ -1,12 +1,20 @@
 <div class="shell">
   <div class="card">
     <div class="card-head">
-      <h2>Tạo mới văn bản</h2>
+      <div class="left">
+        <button type="button"
+                mat-icon-button
+                class="btn-back"
+                matTooltip="Về trang chủ"
+                (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <h2>Tạo mới văn bản</h2>
+      </div>
       <div class="hint">Đi = OUTBOUND • Đến = INBOUND</div>
     </div>
 
     <form [formGroup]="form" (ngSubmit)="submit()" class="form-grid">
-
       <!-- Loại văn bản -->
       <mat-form-field appearance="outline">
         <mat-label>Loại văn bản</mat-label>
@@ -37,11 +45,13 @@
         <mat-error *ngIf="form.get('content')?.hasError('required')">Bắt buộc</mat-error>
       </mat-form-field>
 
-      <!-- Dynamic date: OUTBOUND -> issued_at / INBOUND -> received_at -->
+      <!-- Ngày: OUTBOUND -> issued_at / INBOUND -> received_at -->
       <mat-form-field appearance="outline">
         <mat-label *ngIf="docType() === 'OUTBOUND'">Ngày ban hành</mat-label>
         <mat-label *ngIf="docType() === 'INBOUND'">Ngày nhận</mat-label>
-        <input matInput [matDatepicker]="picker" [formControlName]="docType() === 'OUTBOUND' ? 'issued_at' : 'received_at'">
+        <input matInput
+               [matDatepicker]="picker"
+               [formControlName]="docType() === 'OUTBOUND' ? 'issued_at' : 'received_at'">
         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
 
@@ -53,14 +63,13 @@
         </mat-error>
       </mat-form-field>
 
-      <!-- Dynamic unit: OUTBOUND -> recipient_unit / INBOUND -> sender_unit -->
+      <!-- Đơn vị: OUTBOUND -> recipient_unit / INBOUND -> sender_unit -->
       <mat-form-field appearance="outline">
         <mat-label *ngIf="docType() === 'OUTBOUND'">Nơi nhận</mat-label>
         <mat-label *ngIf="docType() === 'INBOUND'">Nơi gửi</mat-label>
-        <input
-          matInput
-          [formControlName]="docType() === 'OUTBOUND' ? 'recipient_unit' : 'sender_unit'"
-          [placeholder]="docType() === 'OUTBOUND' ? 'VD: Phòng Hành chính' : 'VD: Sở Y tế'">
+        <input matInput
+               [formControlName]="docType() === 'OUTBOUND' ? 'recipient_unit' : 'sender_unit'"
+               [placeholder]="docType() === 'OUTBOUND' ? 'VD: Phòng Hành chính' : 'VD: Sở Y tế'">
         <mat-error *ngIf="docType() === 'OUTBOUND' && form.get('recipient_unit')?.hasError('required')">
           Bắt buộc cho văn bản Đi
         </mat-error>
@@ -96,7 +105,7 @@
         <mat-progress-bar *ngIf="uploading()" mode="determinate" [value]="uploadProgress() ?? 0"></mat-progress-bar>
       </div>
 
-      <div class="actions full">
+       <div class="actions full">
         <button mat-stroked-button type="reset">Làm lại</button>
         <button mat-raised-button color="primary" type="submit" [disabled]="uploading()">Tạo văn bản</button>
       </div>

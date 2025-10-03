@@ -1,5 +1,5 @@
 // app.routes.ts
-import { Routes } from '@angular/router';
+import { Routes, UrlSegment, UrlMatchResult } from '@angular/router';
 import { PublicLayout } from './layouts/public-layout/public-layout.component';
 import { AuthGuard } from './core/auth/auth-guard';
 import { RoleCanMatch } from './core/auth/role.guard';
@@ -9,7 +9,13 @@ import { DocumentListComponent } from './features/documents/document-list.compon
 import { IncomingList } from './features/documents/incoming/incoming-list/incoming-list.component';
 import { DocumentDetailComponent } from './features/documents/documentsDetail/document-detail.component';
 import { UsersManagementComponent } from './layouts/admin-layout/users-management/users-management.component';
-
+import { DocumentCreateComponent } from './features/documents/document-create/document-create.component';
+export function docIdMatcher(url: UrlSegment[]): UrlMatchResult | null {
+  if (url.length === 2 && url[0].path === 'documents' && /^\d+$/.test(url[1].path)) {
+    return { consumed: url };
+  }
+  return null;
+}
 export const routes: Routes = [
   {
     path: 'forbidden',
@@ -34,7 +40,8 @@ export const routes: Routes = [
       // ==== USER ZONE (mọi role đã đăng nhập) ====
       { path: 'document-list', component: DocumentListComponent },
       { path: 'incoming-list', component: IncomingList },
-      { path: 'documents/:id', component: DocumentDetailComponent },
+      { path: 'documents/new', component: DocumentCreateComponent },
+      { matcher: docIdMatcher, component: DocumentDetailComponent },
 
       // ==== ADMIN ZONE (LEADER/ADMIN) ====
       {

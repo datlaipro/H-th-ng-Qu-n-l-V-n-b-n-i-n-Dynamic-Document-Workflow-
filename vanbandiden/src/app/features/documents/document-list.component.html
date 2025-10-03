@@ -4,18 +4,29 @@
 
   <div class="panel" [class.grid-mode]="viewMode.value === 'grid'">
     <!-- Actions: List / Grid -->
-    <div class="actions-bar">
-      <mat-button-toggle-group [formControl]="viewMode" exclusive>
-        <mat-button-toggle value="list">
-          <mat-icon>checklist</mat-icon>
-          <span>List</span>
-        </mat-button-toggle>
-        <mat-button-toggle value="grid">
-          <mat-icon>grid_view</mat-icon>
-          <span>Grid</span>
-        </mat-button-toggle>
-      </mat-button-toggle-group>
-    </div>
+<!-- Actions: List / Grid + Create -->
+<div class="actions-bar">
+  <div class="left">
+    <mat-button-toggle-group [formControl]="viewMode" exclusive>
+      <mat-button-toggle value="list">
+        <mat-icon>checklist</mat-icon>
+        <span>List</span>
+      </mat-button-toggle>
+      <mat-button-toggle value="grid">
+        <mat-icon>grid_view</mat-icon>
+        <span>Grid</span>
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+  </div>
+
+  <div class="right">
+    <button mat-raised-button color="primary" class="btn-create" (click)="createNew()" matTooltip="Tạo mới văn bản">
+      <mat-icon>add</mat-icon>
+      <span>Tạo mới văn bản</span>
+    </button>
+  </div>
+</div>
+
 
     <!-- LIST VIEW -->
 <!-- LIST VIEW (mỗi hàng là một div) -->

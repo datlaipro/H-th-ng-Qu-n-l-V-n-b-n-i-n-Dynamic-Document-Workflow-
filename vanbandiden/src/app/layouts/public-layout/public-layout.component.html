@@ -16,51 +16,51 @@
     </div>
 
     <mat-nav-list class="side-navlist">
-  <div class="group-title">VĂN BẢN</div>
-  <button
-    mat-list-item
-    class="nav-btn"
-    type="button"
-    *ngFor="let m of mainMenus"
-    (click)="go(m.link)"
-    [class.is-active]="isActive(m.link)"
-    [disableRipple]="true"
-  >
-    <mat-icon matListItemIcon>{{ m.icon }}</mat-icon>
-    <span matListItemTitle>{{ m.label }}</span>
-  </button>
+      <div class="group-title">VĂN BẢN</div>
+      <button
+        mat-list-item
+        class="nav-btn"
+        type="button"
+        *ngFor="let m of mainMenus"
+        (click)="go(m.link)"
+        [class.is-active]="isActive(m.link)"
+        [disableRipple]="true"
+      >
+        <mat-icon matListItemIcon>{{ m.icon }}</mat-icon>
+        <span matListItemTitle>{{ m.label }}</span>
+      </button>
 
-  <mat-divider></mat-divider>
-  <div class="group-title">LUỒNG XỬ LÝ</div>
-  <button
-    mat-list-item
-    class="nav-btn"
-    type="button"
-    *ngFor="let m of flowMenus"
-    (click)="go(m.link)"
-    [class.is-active]="isActive(m.link)"
-    [disableRipple]="true"
-  >
-    <mat-icon matListItemIcon>{{ m.icon }}</mat-icon>
-    <span matListItemTitle>{{ m.label }}</span>
-  </button>
+      <mat-divider></mat-divider>
+      <div class="group-title">LUỒNG XỬ LÝ</div>
+      <ng-container *ngFor="let m of filteredMenus(); trackBy: trackByLink">
+        <button
+          mat-list-item
+          class="nav-btn"
+          type="button"
+          (click)="go(m.link)"
+          [class.is-active]="isActive(m.link)"
+          [disableRipple]="true"
+        >
+          <mat-icon matListItemIcon>{{ m.icon }}</mat-icon>
+          <span matListItemTitle>{{ m.label }}</span>
+        </button>
+      </ng-container>
 
-  <mat-divider></mat-divider>
-  <div class="group-title">TIỆN ÍCH</div>
-  <button
-    mat-list-item
-    class="nav-btn"
-    type="button"
-    *ngFor="let m of utilityMenus"
-    (click)="go(m.link)"
-    [class.is-active]="isActive(m.link)"
-    [disableRipple]="true"
-  >
-    <mat-icon matListItemIcon>{{ m.icon }}</mat-icon>
-    <span matListItemTitle>{{ m.label }}</span>
-  </button>
-</mat-nav-list>
-
+      <mat-divider></mat-divider>
+      <div class="group-title">TIỆN ÍCH</div>
+      <button
+        mat-list-item
+        class="nav-btn"
+        type="button"
+        *ngFor="let m of utilityMenus"
+        (click)="go(m.link)"
+        [class.is-active]="isActive(m.link)"
+        [disableRipple]="true"
+      >
+        <mat-icon matListItemIcon>{{ m.icon }}</mat-icon>
+        <span matListItemTitle>{{ m.label }}</span>
+      </button>
+    </mat-nav-list>
   </mat-sidenav>
 
   <!-- Nội dung + Header xanh -->
@@ -134,6 +134,5 @@
     </div>
 
     <!-- Footer (tùy chọn) -->
-
   </mat-sidenav-content>
 </mat-sidenav-container>

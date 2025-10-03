@@ -1,8 +1,10 @@
 import { Component, inject, signal, computed, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule ,Location} from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-
+import { Router } from '@angular/router'; 
+import { toSignal } from '@angular/core/rxjs-interop';
+import { startWith } from 'rxjs/operators';
 // Angular Material
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -40,8 +42,11 @@ type DocType = 'OUTBOUND' | 'INBOUND';
   styleUrls: ['./document-create.component.css'],
 })
 export class DocumentCreateComponent {
-  private fb = inject(FormBuilder);
+  
+   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
+  private router = inject(Router);      // <—
+  private location = inject(Location); 
 
   // đổi URL API phù hợp backend của bạn
   private readonly baseUrl = 'http://localhost:18080/api/documents';
@@ -64,10 +69,13 @@ export class DocumentCreateComponent {
     recipient_unit: [''], // Nơi nhận  (OUTBOUND)
   });
 
-  docType = computed<DocType>(() => this.form.get('doc_type')!.value as DocType);
-
+docType = toSignal(
+  this.form.get('doc_type')!.valueChanges.pipe(
+    startWith(this.form.get('doc_type')!.value as DocType)
+  ),
+  { initialValue: this.form.get('doc_type')!.value as DocType }
+);
   constructor() {
-    // Ràng buộc động theo loại văn bản
     effect(() => {
       const t = this.docType();
       const issued = this.form.get('issued_at')!;
@@ -75,7 +83,7 @@ export class DocumentCreateComponent {
       const sender = this.form.get('sender_unit')!;
       const recipient = this.form.get('recipient_unit')!;
 
-      // reset validator trước
+      // reset validators trước
       issued.clearValidators();
       received.clearValidators();
       sender.clearValidators();
@@ -85,11 +93,18 @@ export class DocumentCreateComponent {
         // Văn bản Đi: cần issued_at + recipient_unit
         issued.setValidators([Validators.required]);
         recipient.setValidators([Validators.required, Validators.maxLength(255)]);
-        // không bắt buộc các trường còn lại
+
+        // DỌN các trường không dùng của INBOUND
+        if (received.value) received.setValue(null, { emitEvent: false });
+        if (sender.value) sender.setValue('', { emitEvent: false });
       } else {
         // Văn bản Đến: cần received_at + sender_unit
         received.setValidators([Validators.required]);
         sender.setValidators([Validators.required, Validators.maxLength(255)]);
+
+        // DỌN các trường không dùng của OUTBOUND
+        if (issued.value) issued.setValue(null, { emitEvent: false });
+        if (recipient.value) recipient.setValue('', { emitEvent: false });
       }
 
       issued.updateValueAndValidity({ emitEvent: false });
@@ -188,6 +203,7 @@ export class DocumentCreateComponent {
         },
       });
   }
+  
 
   private toDateStr(d: any): string | null {
     if (!d) return null;
@@ -198,5 +214,11 @@ export class DocumentCreateComponent {
     const m = String(dd.getMonth() + 1).padStart(2, '0');
     const day = String(dd.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
+  }
+  goBack() {
+    // C1: về trang chủ/tùy bạn
+    // this.router.navigate(['/document-list']);
+    // C2 (thay thế): quay lại đúng trang trước đó trong lịch sử
+    this.location.back();
   }
 }

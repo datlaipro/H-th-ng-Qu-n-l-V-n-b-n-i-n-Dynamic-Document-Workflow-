@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-
+import { AuthService } from '../../core/auth/auth.service';
 // Angular Material
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -37,8 +37,7 @@ export class LoginComponent {
   error: string | null = null;
   retryAfterText: string | null = null; // ví dụ: "in 1 minute", "in 42 seconds"
 
-  constructor(private http: HttpClient, private router: Router) // private snack: MatSnackBar
-  {}
+  constructor(private auth: AuthService, private router: Router) {}
 
   togglePassword() {
     this.showPassword = !this.showPassword;
@@ -49,28 +48,22 @@ export class LoginComponent {
     this.retryAfterText = null;
     this.loading = true;
 
-    this.http
-      .post(
-        '/api/auth/login',
-        { email: this.email?.trim(), password: this.password },
-        { withCredentials: true, observe: 'response' }
-      )
-      .subscribe({
-        next: (res: HttpResponse<any>) => {
-          this.loading = false;
-          // đăng nhập thành công
-          this.router.navigateByUrl('/');
-        },
-        error: (err: HttpErrorResponse) => {
-          this.loading = false;
-          const mapped = this.mapBackendError(err);
-          this.error = mapped.message;
-          this.retryAfterText = mapped.retryAfterText ?? null; // 👈 fix
+    this.loading = true;
 
-          // Option: snackbar thêm
-          // if (mapped.snack) this.snack.open(mapped.snack, 'OK', { duration: 4000 });
-        },
-      });
+    this.auth.login({ email: this.email, password: this.password }).subscribe({
+      next: () => {
+        this.loading = false;
+        // đăng nhập thành công
+        this.router.navigateByUrl('/');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.loading = false;
+        const mapped = this.mapBackendError(err);
+        this.error = mapped.message;
+        this.retryAfterText = mapped.retryAfterText ?? null;
+        // if (mapped.snack) this.snack.open(mapped.snack, 'OK', { duration: 4000 });
+      },
+    });
   }
 
   /**
