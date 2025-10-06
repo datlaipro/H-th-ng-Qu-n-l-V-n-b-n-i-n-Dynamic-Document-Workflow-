@@ -24,7 +24,6 @@ public class AuthServiceImpl implements AuthService {
     public void login(LoginRequest req, HttpServletRequest httpReq, HttpServletResponse httpResp) {
         try {
             User u = userDao.findByEmail(req.email);
-            // không lộ inactive khác invalid để tránh dò tài khoản
             if (u == null)
                 throw new InvalidCredentialsException();
             if (!u.active)
@@ -36,7 +35,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             long now = System.currentTimeMillis() / 1000L;
-            long accessExp = now + 15 * 60; // 15m
+            long accessExp = now + 15 * 60; // 15 phút
             String access = JwtUtil.sign(u.id, u.role, u.email, accessExp);
 
             String familyId = UUID.randomUUID().toString();
@@ -49,26 +48,37 @@ public class AuthServiceImpl implements AuthService {
                     u.id, jti, familyId, refreshHash, null,
                     httpReq.getRemoteAddr(), httpReq.getHeader("User-Agent"), rtExp);
 
-            Cookie c1 = new Cookie("SESSION", access);
-            c1.setHttpOnly(true);
-            c1.setPath("/");
-            c1.setMaxAge((int) (accessExp - now));
-            // c1.setSecure(true);
-            httpResp.addCookie(c1);
-            httpResp.setHeader("Set-Cookie", "SESSION=" + access + "; Path=/; HttpOnly; SameSite=Lax");
+            // === CORS cho response này (để browser nhận cookie cross-site) ===
+            String origin = httpReq.getHeader("Origin");
+            if (origin != null && origin.startsWith("http://localhost:4200")) {
+                httpResp.setHeader("Access-Control-Allow-Origin", origin);
+                httpResp.setHeader("Vary", "Origin");
+                httpResp.setHeader("Access-Control-Allow-Credentials", "true");
+            }
 
-            Cookie c2 = new Cookie("REFRESH", refreshPlain);
-            c2.setHttpOnly(true);
-            c2.setPath("/api/auth");
-            c2.setMaxAge(7 * 24 * 60 * 60);
-            // c2.setSecure(true);
-            httpResp.addCookie(c2);
-            httpResp.addHeader("Set-Cookie", "REFRESH=" + refreshPlain + "; Path=/api/auth; HttpOnly; SameSite=Strict");
+            // === Set-Cookie (dạng thủ công để có SameSite) ===
+            int accessMaxAge = (int) (accessExp - now); // giây
+            // ⚠ Với cross-site XHR: cần SameSite=None; Secure; => Hãy chạy HTTPS để cookie
+            // không bị drop
+            String sessionCookie = "SESSION=" + access
+                    + "; Path=/"
+                    + "; HttpOnly"
+                    + "; Max-Age=" + accessMaxAge
+                    + "; SameSite=None"
+                    + "; Secure";
+            httpResp.addHeader("Set-Cookie", sessionCookie);
+
+            String refreshCookie = "REFRESH=" + refreshPlain
+                    + "; Path=/api/auth"
+                    + "; HttpOnly"
+                    + "; Max-Age=" + (7 * 24 * 60 * 60)
+                    + "; SameSite=None"
+                    + "; Secure";
+            httpResp.addHeader("Set-Cookie", refreshCookie);
 
         } catch (AppException ae) {
-            throw ae; // để GlobalErrorFilter trả JSON chuẩn
+            throw ae;
         } catch (Throwable t) {
-            // DB/driver hoặc lỗi bất ngờ khác
             throw new AppException(ErrorCode.DATABASE_ERROR, "Database error", t);
         }
     }
@@ -94,19 +104,17 @@ public class AuthServiceImpl implements AuthService {
                 if (row != null && !row.isRevoked())
                     rtDao.revokeById(row.id);
             }
-            // clear cookies
-            Cookie c1 = new Cookie("SESSION", "");
-            c1.setHttpOnly(true);
-            c1.setPath("/");
-            c1.setMaxAge(0);
-            Cookie c2 = new Cookie("REFRESH", "");
-            c2.setHttpOnly(true);
-            c2.setPath("/api/auth");
-            c2.setMaxAge(0);
-            httpResp.addCookie(c1);
-            httpResp.addCookie(c2);
-            httpResp.setHeader("Set-Cookie", "SESSION=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax");
-            httpResp.addHeader("Set-Cookie", "REFRESH=; Path=/api/auth; Max-Age=0; HttpOnly; SameSite=Strict");
+
+            String origin = httpReq.getHeader("Origin");
+            if (origin != null && origin.startsWith("http://localhost:4200")) {
+                httpResp.setHeader("Access-Control-Allow-Origin", origin);
+                httpResp.setHeader("Vary", "Origin");
+                httpResp.setHeader("Access-Control-Allow-Credentials", "true");
+            }
+
+            // Max-Age=0 để xoá, same attributes
+            httpResp.addHeader("Set-Cookie", "SESSION=; Path=/; Max-Age=0; HttpOnly; SameSite=None; Secure");
+            httpResp.addHeader("Set-Cookie", "REFRESH=; Path=/api/auth; Max-Age=0; HttpOnly; SameSite=None; Secure");
 
         } catch (AppException ae) {
             throw ae;
@@ -120,13 +128,11 @@ public class AuthServiceImpl implements AuthService {
         try {
             String refreshPlain = cookie(httpReq, "REFRESH");
             if (refreshPlain == null || refreshPlain.isEmpty()) {
-                // thiếu refresh cookie -> coi như bad request
                 throw new AppException(ErrorCode.VALIDATION_ERROR, "Missing refresh token");
             }
 
             RefreshTokenRow row = rtDao.findActiveByHash(HashUtil.sha256Hex(refreshPlain));
             if (row == null || row.isRevoked() || row.expiresAt.getTime() < System.currentTimeMillis()) {
-                // refresh token không hợp lệ/hết hạn
                 throw new AppException(ErrorCode.FORBIDDEN, "Invalid or expired refresh token");
             }
 
@@ -150,19 +156,21 @@ public class AuthServiceImpl implements AuthService {
             long accessExp = now + 15 * 60;
             String access = JwtUtil.sign(u.id, u.role, u.email, accessExp);
 
-            Cookie c1 = new Cookie("SESSION", access);
-            c1.setHttpOnly(true);
-            c1.setPath("/");
-            c1.setMaxAge((int) (accessExp - now));
-            httpResp.addCookie(c1);
-            httpResp.setHeader("Set-Cookie", "SESSION=" + access + "; Path=/; HttpOnly; SameSite=Lax");
+            // CORS
+            String origin = httpReq.getHeader("Origin");
+            if (origin != null && origin.startsWith("http://localhost:4200")) {
+                httpResp.setHeader("Access-Control-Allow-Origin", origin);
+                httpResp.setHeader("Vary", "Origin");
+                httpResp.setHeader("Access-Control-Allow-Credentials", "true");
+            }
 
-            Cookie c2 = new Cookie("REFRESH", newPlain);
-            c2.setHttpOnly(true);
-            c2.setPath("/api/auth");
-            c2.setMaxAge(7 * 24 * 60 * 60);
-            httpResp.addCookie(c2);
-            httpResp.addHeader("Set-Cookie", "REFRESH=" + newPlain + "; Path=/api/auth; HttpOnly; SameSite=Strict");
+            // Set-Cookie
+            int accessMaxAge = (int) (accessExp - now);
+            httpResp.addHeader("Set-Cookie",
+                    "SESSION=" + access + "; Path=/; HttpOnly; Max-Age=" + accessMaxAge + "; SameSite=None; Secure");
+            httpResp.addHeader("Set-Cookie",
+                    "REFRESH=" + newPlain + "; Path=/api/auth; HttpOnly; Max-Age=" + (7 * 24 * 60 * 60)
+                            + "; SameSite=None; Secure");
 
         } catch (AppException ae) {
             throw ae;
@@ -174,7 +182,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public User me(HttpServletRequest httpReq) {
         try {
-            Object uidObj = httpReq.getAttribute("auth.userId");
+            Object uidObj = httpReq.getAttribute("auth.userId");// lấy ra userId đã được AuthFilter set vào request
             if (uidObj == null)
                 return null;
             return userDao.findById((Long) uidObj);

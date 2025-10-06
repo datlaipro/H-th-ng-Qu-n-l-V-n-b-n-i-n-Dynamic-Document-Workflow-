@@ -21,11 +21,12 @@
     <commons-io.version>2.11.0</commons-io.version>
     <gson.version>2.10.1</gson.version>
     <jbcrypt.version>0.4</jbcrypt.version>
-
-    <!-- MySQL 5.7 dùng Connector/J 5.1.49 -->
+    <!-- MySQL 5.7: Connector/J 5.1.49 -->
     <mysql.connector.version>5.1.49</mysql.connector.version>
-
     <servlet.version>3.1.0</servlet.version>
+
+    <!-- AWS SDK v2 (S3) -->
+    <aws.sdk.v2.version>2.25.64</aws.sdk.v2.version>
   </properties>
 
   <dependencies>
@@ -51,6 +52,7 @@
       <version>${zk.version}</version>
     </dependency>
 
+
     <!-- Upload / IO -->
     <dependency>
       <groupId>commons-fileupload</groupId>
@@ -63,14 +65,14 @@
       <version>${commons-io.version}</version>
     </dependency>
 
-    <!-- JDBC MySQL 5.7: Connector/J 5.1.49 -->
+    <!-- JDBC MySQL 5.7 -->
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
       <version>${mysql.connector.version}</version>
     </dependency>
 
-    <!-- JSON + BCrypt cho Auth -->
+    <!-- JSON + BCrypt -->
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
@@ -80,6 +82,40 @@
       <groupId>org.mindrot</groupId>
       <artifactId>jbcrypt</artifactId>
       <version>${jbcrypt.version}</version>
+    </dependency>
+    <!-- Jackson (JSON) -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.15.4</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>2.15.4</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>2.15.4</version>
+    </dependency>
+
+
+    <!-- AWS SDK v2 (S3 + Presigner nằm trong s3) -->
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>s3</artifactId>
+      <version>${aws.sdk.v2.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>auth</artifactId>
+      <version>${aws.sdk.v2.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>regions</artifactId>
+      <version>${aws.sdk.v2.version}</version>
     </dependency>
 
     <!-- Servlet API (Tomcat cung cấp) -->

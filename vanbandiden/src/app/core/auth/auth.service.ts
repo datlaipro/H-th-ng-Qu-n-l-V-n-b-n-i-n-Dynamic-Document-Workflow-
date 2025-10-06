@@ -17,6 +17,7 @@ export class AuthService {
   isLoggedIn = computed(() => this.user() !== null);
 
   private base = 'http://localhost:18080/api/auth';
+  private api = 'http://localhost:18080/api';
 
   constructor(private http: HttpClient) {}
 
@@ -33,8 +34,6 @@ export class AuthService {
       );
   }
 
-  
-
   logout() {
     return this.http
       .post<void>(`${this.base}/logout`, {}, { withCredentials: true })
@@ -46,7 +45,17 @@ export class AuthService {
       withCredentials: true,
     });
   }
-
+createDocument(payload: any | FormData) {
+  return this.http.post(`${this.api}/documents`, payload, {
+    withCredentials: true,
+  });
+}
+uploadFile(body: { data:FormData }) {// api upload file
+    // chú ý: 1 dấu /, truyền body là tham số thứ 2, options là tham số thứ 3
+    return this.http.post<SessionUser>(`${this.api}/uploads`, body, {
+      withCredentials: true,
+    });
+  }
   // check 1 role
   hasRole(r: Role): boolean {
     const u = this.user();

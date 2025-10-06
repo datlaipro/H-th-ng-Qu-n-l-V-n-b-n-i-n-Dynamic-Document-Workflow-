@@ -13,21 +13,19 @@
       <name>JSESSIONID</name>
       <path>/</path>
       <http-only>true</http-only>
-      <!-- Bật khi HTTPS:
-      <secure>true</secure>
-      -->
+      <!-- <secure>true</secure>  Bật khi dùng HTTPS -->
     </cookie-config>
     <tracking-mode>COOKIE</tracking-mode>
   </session-config>
 
-  <!-- ===== CORS cho API (khi FE khác origin) ===== -->
+  <!-- ===== CORS chạy trước và phủ toàn app ===== -->
   <filter>
     <filter-name>CorsFilter</filter-name>
     <filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
+    <async-supported>true</async-supported>
     <init-param>
       <param-name>cors.allowed.origins</param-name>
-      <!-- TODO: đổi domain FE thực tế -->
-      <param-value>http://localhost:4200, http://localhost:8080, https://your-fe-domain.com</param-value>
+      <param-value>http://localhost:4200</param-value>
     </init-param>
     <init-param>
       <param-name>cors.allowed.methods</param-name>
@@ -35,91 +33,127 @@
     </init-param>
     <init-param>
       <param-name>cors.allowed.headers</param-name>
-      <param-value>Content-Type, X-Requested-With, X-XSRF-TOKEN</param-value>
+      <param-value>
+        Origin,Accept,X-Requested-With,Content-Type,Authorization,Access-Control-Request-Method,Access-Control-Request-Headers</param-value>
     </init-param>
     <init-param>
       <param-name>cors.exposed.headers</param-name>
-      <param-value>Set-Cookie</param-value>
+      <param-value>Location,Content-Disposition,Set-Cookie</param-value>
     </init-param>
     <init-param>
       <param-name>cors.support.credentials</param-name>
       <param-value>true</param-value>
     </init-param>
+    <init-param>
+      <param-name>cors.preflight.maxage</param-name>
+      <param-value>3600</param-value>
+    </init-param>
   </filter>
   <filter-mapping>
     <filter-name>CorsFilter</filter-name>
-    <url-pattern>/api/*</url-pattern>
+    <url-pattern>/*</url-pattern>
+    <dispatcher>REQUEST</dispatcher>
+    <dispatcher>ASYNC</dispatcher>
   </filter-mapping>
 
-  <!-- ===== AuthFilter: đọc cookie SESSION, gắn user vào request ===== -->
-  <!-- AuthFilter -->
+  <!-- ===== AuthFilter ===== -->
   <filter>
     <filter-name>AuthFilter</filter-name>
     <filter-class>com.github.datlaipro.docflow.api.web.AuthFilter</filter-class>
+    <async-supported>true</async-supported>
   </filter>
   <filter-mapping>
     <filter-name>AuthFilter</filter-name>
     <url-pattern>/api/*</url-pattern>
     <dispatcher>REQUEST</dispatcher>
   </filter-mapping>
+
+  <!-- ===== GlobalErrorFilter ===== -->
   <filter>
     <filter-name>GlobalErrorFilter</filter-name>
     <filter-class>com.github.datlaipro.docflow.api.shared.web.GlobalErrorFilter</filter-class>
+    <async-supported>true</async-supported>
   </filter>
   <filter-mapping>
     <filter-name>GlobalErrorFilter</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 
-
-  <!-- Login -->
+  <!-- ===== Servlets Auth ===== -->
   <servlet>
     <servlet-name>LoginServlet</servlet-name>
     <servlet-class>com.github.datlaipro.docflow.api.web.LoginServlet</servlet-class>
+    <async-supported>true</async-supported>
   </servlet>
   <servlet-mapping>
     <servlet-name>LoginServlet</servlet-name>
     <url-pattern>/api/auth/login</url-pattern>
   </servlet-mapping>
 
-  <!-- Register -->
   <servlet>
     <servlet-name>RegisterServlet</servlet-name>
     <servlet-class>com.github.datlaipro.docflow.api.web.RegisterServlet</servlet-class>
+    <async-supported>true</async-supported>
   </servlet>
   <servlet-mapping>
     <servlet-name>RegisterServlet</servlet-name>
     <url-pattern>/api/auth/register</url-pattern>
   </servlet-mapping>
 
-  <!-- Logout -->
   <servlet>
     <servlet-name>LogoutServlet</servlet-name>
     <servlet-class>com.github.datlaipro.docflow.api.web.LogoutServlet</servlet-class>
+    <async-supported>true</async-supported>
   </servlet>
   <servlet-mapping>
     <servlet-name>LogoutServlet</servlet-name>
     <url-pattern>/api/auth/logout</url-pattern>
   </servlet-mapping>
 
-  <!-- Me -->
   <servlet>
     <servlet-name>MeServlet</servlet-name>
     <servlet-class>com.github.datlaipro.docflow.api.web.MeServlet</servlet-class>
+    <async-supported>true</async-supported>
   </servlet>
   <servlet-mapping>
     <servlet-name>MeServlet</servlet-name>
     <url-pattern>/api/auth/me</url-pattern>
   </servlet-mapping>
 
-  <!-- Refresh -->
   <servlet>
     <servlet-name>RefreshServlet</servlet-name>
     <servlet-class>com.github.datlaipro.docflow.api.web.RefreshServlet</servlet-class>
+    <async-supported>true</async-supported>
   </servlet>
   <servlet-mapping>
     <servlet-name>RefreshServlet</servlet-name>
     <url-pattern>/api/auth/refresh</url-pattern>
+  </servlet-mapping>
+
+  <!-- ===== Create Document (Servlet gọi Service Impl của bạn) ===== -->
+  <servlet>
+    <servlet-name>CreateDocumentServlet</servlet-name>
+    <!-- CHỈNH Ở ĐÂY: servlet ở package document/creat/web -->
+    <servlet-class>com.github.datlaipro.docflow.api.document.creat.web.CreateDocumentServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+    <async-supported>true</async-supported>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CreateDocumentServlet</servlet-name>
+    <url-pattern>/api/documents</url-pattern>
+  </servlet-mapping>
+
+
+  <!-- ===== Presign Upload (Servlet gọi Service Impl của bạn) ===== -->
+  <servlet>
+    <servlet-name>PresignUploadServlet</servlet-name>
+    <servlet-class>com.github.datlaipro.docflow.api.document.creat.web.PresignUploadServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+    <async-supported>true</async-supported>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>PresignUploadServlet</servlet-name>
+    <url-pattern>/api/uploads</url-pattern>
   </servlet-mapping>
 
 
