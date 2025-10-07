@@ -6,9 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import com.github.datlaipro.docflow.api.document.creat.AuthGuard;
+import com.github.datlaipro.docflow.api.document.creat.AuthGuard.AuthGuard;
 import com.github.datlaipro.docflow.api.document.creat.dto.DocumentReqIN;
 import com.github.datlaipro.docflow.api.document.creat.dto.DocumentReqOUT;
+import com.github.datlaipro.docflow.api.document.creat.error.DocumentDuplicateException;
 import com.github.datlaipro.docflow.api.document.creat.service.DocumentCreateService;
 import com.github.datlaipro.docflow.api.document.creat.service.DocumentCreateServiceImpl;
 
@@ -22,13 +23,16 @@ import java.util.logging.Logger;
 
 /**
  * POST /api/documents
- * Hỗ trợ 2 payload:
- *  - INBOUND: DocumentReqIN
- *  - OUTBOUND: DocumentReqOUT
+ * Payload hợp lệ:
+ * - INBOUND: DocumentReqIN
+ * - OUTBOUND: DocumentReqOUT
  *
- * Ưu tiên query/header "type" (INBOUND|OUTBOUND). Nếu không, autodetect theo trường trong JSON.
+ * QUY TẮC TYPE:
+ * - Lấy từ body trước (field "type"), sau đó mới đến query/header ("type" hoặc "X-Doc-Type").
+ * - KHÔNG autodetect theo trường dữ liệu.
+ * - Chỉ chấp nhận INBOUND | OUTBOUND.
  */
-@WebServlet(name = "CreateDocumentServlet", urlPatterns = {"/api/documents"})
+@WebServlet(name = "CreateDocumentServlet", urlPatterns = { "/api/documents" })
 public class CreateDocumentServlet extends HttpServlet {
 
     private static final Logger LOG = Logger.getLogger(CreateDocumentServlet.class.getName());
@@ -58,71 +62,104 @@ public class CreateDocumentServlet extends HttpServlet {
         final String ct = req.getContentType();
         final String origin = req.getHeader("Origin");
 
-        try (PrintWriter out = resp.getWriter()) {
-            LOG.info(() -> String.format("[DOC][HTTP][REQ] %s %s CT=%s ORIGIN=%s", method, uri, ct, origin));
+        PrintWriter out = resp.getWriter();
+        LOG.info("[DOC][HTTP][REQ] " + method + " " + uri + " CT=" + ct + " ORIGIN=" + origin);
 
-            // 👇 BIND request vào AuthGuard để service có request context
-            AuthGuard.bind(req);
-            try {
-                // Parse JSON body
-                JsonNode root = om.readTree(req.getInputStream());
-                if (root == null || root.isNull()) {
-                    LOG.warning("[DOC][HTTP][ERR] Empty body");
-                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    out.write("{\"error\":\"Empty body\"}");
-                    return;
-                }
+        // bind request vào AuthGuard để service có context
+        AuthGuard.bind(req);
+        try {
+            // Parse JSON body
+            JsonNode root = om.readTree(req.getInputStream());
+            if (root == null || root.isNull()) {
+                LOG.warning("[DOC][HTTP][ERR] Empty body");
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.write("{\"error\":\"Empty body\"}");
+                return;
+            }
 
-                // Preview body an toàn (cắt ngắn, chỉ vài trường)
-                LOG.fine(() -> "[DOC][HTTP][BODY] " + safePreviewJson(root, 400));
+            // Preview body an toàn (cắt ngắn, chỉ vài trường)
+            LOG.fine("[DOC][HTTP][BODY] " + safePreviewJson(root, 400));
 
-                // Xác định type
-                String explicitType = readType(req);
-                String resolvedType = explicitType != null ? explicitType : detectType(root);
-                LOG.info(() -> String.format("[DOC][HTTP] explicitType=%s resolvedType=%s", explicitType, resolvedType));
+            // --- Đọc type ---
+            String bodyType = null;
+            if (root.hasNonNull("type")) {
+                bodyType = root.get("type").asText(null);
+                if (bodyType != null) bodyType = bodyType.trim().toUpperCase();
+            }
 
-                if (resolvedType == null) {
-                    LOG.warning("[DOC][HTTP][ERR] Cannot detect type from body/headers");
-                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    out.write("{\"error\":\"Cannot detect document type. Provide 'type' (INBOUND|OUTBOUND) or include fields of the corresponding type.\"}");
-                    return;
-                }
+            String qhType = readType(req); // đã upper-case & validated trong hàm này (trả null nếu không hợp lệ)
+            if (qhType != null) qhType = qhType.trim().toUpperCase();
 
-                long id;
-                switch (resolvedType) {
-                    case "INBOUND": {
-                        DocumentReqIN body = om.treeToValue(root, DocumentReqIN.class);
-                        LOG.fine(() -> String.format("[DOC][INBOUND] number=%s receivedAt=%s senderUnit=%s attCount=%d",
-                                safe(body.number), safe(body.receivedAt), safe(body.senderUnit),
-                                body.attachments == null ? 0 : body.attachments.size()));
+            // Quy tắc: body > query/header; không autodetect
+            final String resolvedType = (bodyType != null) ? bodyType : qhType;
+
+            // Validate type hợp lệ
+            if (!"INBOUND".equals(resolvedType) && !"OUTBOUND".equals(resolvedType)) {
+                LOG.warning("[DOC][HTTP][ERR] Missing/invalid type (got=" + resolvedType + ")");
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.write("{\"error\":\"Thiếu hoặc sai 'type' (INBOUND|OUTBOUND).\"}");
+                return;
+            }
+
+            // Nếu body và query/header cùng có thì phải trùng nhau
+            if (bodyType != null && qhType != null && !bodyType.equals(qhType)) {
+                LOG.warning("[DOC][HTTP][ERR] 'type' ở body và query/header không trùng nhau. body=" + bodyType + ", qh=" + qhType);
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                out.write("{\"error\":\"'type' ở body và query/header không trùng nhau.\"}");
+                return;
+            }
+
+            LOG.info("[DOC][HTTP] resolvedType=" + resolvedType);
+
+            long id;
+            switch (resolvedType) {
+                case "INBOUND": {
+                    DocumentReqIN body = om.treeToValue(root, DocumentReqIN.class);
+                    final String number = body.number; // dùng để log/hiển thị khi duplicate
+                    LOG.fine("[DOC][INBOUND] number=" + safe(number)
+                            + " receivedAt=" + safe(body.receivedAt)
+                            + " senderUnit=" + safe(body.senderUnit)
+                            + " attCount=" + (body.attachments == null ? 0 : body.attachments.size()));
+                    try {
                         id = service.createInbound(body);
-                        break;
-                    }
-                    case "OUTBOUND": {
-                        DocumentReqOUT body = om.treeToValue(root, DocumentReqOUT.class);
-                        LOG.fine(() -> String.format("[DOC][OUTBOUND] number=%s issuedAt=%s recipientUnit=%s attCount=%d",
-                                safe(body.number), safe(body.issuedAt), safe(body.recipientUnit),
-                                body.attachments == null ? 0 : body.attachments.size()));
-                        id = service.createOutbound(body);
-                        break;
-                    }
-                    default: {
-                        LOG.warning("[DOC][HTTP][ERR] Invalid type value: " + resolvedType);
-                        resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                        out.write("{\"error\":\"Invalid type. Must be INBOUND or OUTBOUND\"}");
+                    } catch (DocumentDuplicateException dup) {
+                        LOG.warning("[DOC][INBOUND][DUP] number=" + safe(number) + " msg=" + dup.getMessage());
+                        resp.setStatus(HttpServletResponse.SC_CONFLICT); // 409
+                        out.write("{\"error\":\"Số hiệu văn bản đã tồn tại\",\"type\":\"INBOUND\",\"number\":\"" + escape(number) + "\"}");
                         return;
                     }
+                    break;
                 }
-
-                long dt = System.currentTimeMillis() - t0;
-                LOG.info(() -> String.format("[DOC][HTTP][OK] id=%d type=%s in %d ms", id, resolvedType, dt));
-
-                resp.setStatus(HttpServletResponse.SC_OK);
-                out.write("{\"id\":" + id + ",\"message\":\"created\"}");
-            } finally {
-                // 👇 luôn clear để tránh leak ThreadLocal giữa các request
-                AuthGuard.clear();
+                case "OUTBOUND": {
+                    DocumentReqOUT body = om.treeToValue(root, DocumentReqOUT.class);
+                    final String number = body.number; // dùng để log/hiển thị khi duplicate
+                    LOG.fine("[DOC][OUTBOUND] number=" + safe(number)
+                            + " issuedAt=" + safe(body.issuedAt)
+                            + " recipientUnit=" + safe(body.recipientUnit)
+                            + " attCount=" + (body.attachments == null ? 0 : body.attachments.size()));
+                    try {
+                        id = service.createOutbound(body);
+                    } catch (DocumentDuplicateException dup) {
+                        LOG.warning("[DOC][OUTBOUND][DUP] number=" + safe(number) + " msg=" + dup.getMessage());
+                        resp.setStatus(HttpServletResponse.SC_CONFLICT); // 409
+                        out.write("{\"error\":\"Số hiệu văn bản đã tồn tại\",\"type\":\"OUTBOUND\",\"number\":\"" + escape(number) + "\"}");
+                        return;
+                    }
+                    break;
+                }
+                default: {
+                    LOG.warning("[DOC][HTTP][ERR] Invalid type value: " + resolvedType);
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    out.write("{\"error\":\"Invalid type. Must be INBOUND or OUTBOUND\"}");
+                    return;
+                }
             }
+
+            long dt = System.currentTimeMillis() - t0;
+            LOG.info("[DOC][HTTP][OK] id=" + id + " type=" + resolvedType + " in " + dt + " ms");
+
+            resp.setStatus(HttpServletResponse.SC_OK);
+            out.write("{\"id\":" + id + ",\"type\":\"" + resolvedType + "\",\"message\":\"created\"}");
         } catch (IllegalArgumentException ex) {
             LOG.log(Level.WARNING, "[DOC][HTTP][BAD_REQUEST] " + ex.getMessage(), ex);
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -131,6 +168,9 @@ public class CreateDocumentServlet extends HttpServlet {
             LOG.log(Level.SEVERE, "[DOC][HTTP][EX] " + ex.getMessage(), ex);
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.getWriter().write("{\"error\":\"Internal error: " + escape(ex.getMessage()) + "\"}");
+        } finally {
+            // luôn clear để tránh leak ThreadLocal giữa các request
+            AuthGuard.clear();
         }
     }
 
@@ -154,7 +194,10 @@ public class CreateDocumentServlet extends HttpServlet {
         }
     }
 
-    /** Đọc type từ query hoặc header (không phân biệt hoa thường), trả về INBOUND/OUTBOUND hoặc null */
+    /**
+     * Đọc type từ query hoặc header (không phân biệt hoa thường).
+     * Trả về INBOUND/OUTBOUND nếu hợp lệ, hoặc null nếu thiếu/không hợp lệ.
+     */
     private static String readType(HttpServletRequest req) {
         String t = req.getParameter("type");
         if (t == null || t.isEmpty()) {
@@ -163,18 +206,7 @@ public class CreateDocumentServlet extends HttpServlet {
         if (t == null) return null;
         t = t.trim().toUpperCase();
         if ("INBOUND".equals(t) || "OUTBOUND".equals(t)) return t;
-        return null;
-    }
-
-    /** Tự nhận dạng loại theo trường trong JSON */
-    private static String detectType(JsonNode root) {
-        boolean looksInbound  = root.hasNonNull("received_at")  || root.hasNonNull("sender_unit");
-        boolean looksOutbound = root.hasNonNull("issued_at")    || root.hasNonNull("recipient_unit");
-
-        if (looksInbound && !looksOutbound) return "INBOUND";
-        if (looksOutbound && !looksInbound) return "OUTBOUND";
-        // Nếu cả hai hoặc không cái nào rõ ràng → trả null, yêu cầu client chỉ rõ
-        return null;
+        return null; // coi như không hợp lệ
     }
 
     // Chỉ preview vài trường quan trọng, cắt ngắn để không lộ dữ liệu nhạy cảm

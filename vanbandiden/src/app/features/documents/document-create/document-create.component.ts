@@ -4,7 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { startWith, firstValueFrom } from 'rxjs';
 import { UploadService } from '../../../domain/document/services/upload.service';
-
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 // Angular Material
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -39,6 +39,7 @@ type DocType = 'OUTBOUND' | 'INBOUND';
     MatDividerModule,
     MatTooltipModule,
     MatProgressBarModule,
+    MatSnackBarModule,
   ],
   templateUrl: './document-create.component.html',
   styleUrls: ['./document-create.component.css'],
@@ -48,6 +49,7 @@ export class DocumentCreateComponent {
   private location = inject(Location);
   private uploader = inject(UploadService);
   private auth = inject(AuthService);
+  private snackbar = inject(MatSnackBar); //
 
   errorMsg = signal<string | null>(null);
   // file chọn ở FE (chưa upload)
@@ -56,13 +58,48 @@ export class DocumentCreateComponent {
   uploaded = signal<{ fileName: string; fileUrl: string; mimeType: string; sizeBytes: number }[]>(
     []
   );
+  private parseError(err: any): string {
+    // BE của bạn thường trả { error: "..."} hoặc { message: "..." }
+    const status = err?.status ?? 0;
+    const bodyErr = err?.error?.error || err?.error?.message || err?.message;
+
+    // map nhanh theo HTTP status
+    if (status === 0) {
+      return 'Không thể kết nối máy chủ (CORS/Mạng).';
+    }
+    if (status === 400) {
+      // validation hoặc request sai
+      return bodyErr || 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
+    }
+    if (status === 401) {
+      return 'Phiên đăng nhập đã hết hạn hoặc chưa đăng nhập.';
+    }
+    if (status === 413) {
+      return 'File quá lớn, vượt quá giới hạn cho phép.';
+    }
+    if (status === 415) {
+      return 'Định dạng file/Content-Type không được hỗ trợ.';
+    }
+    if (status >= 500) {
+      return 'Lỗi máy chủ. Vui lòng thử lại sau.';
+    }
+    return bodyErr || `Lỗi không xác định (HTTP ${status}).`;
+  }
 
   uploading = signal(false);
   uploadProgress = signal<number | null>(null); // % tổng cho bước upload lên R2
 
   form = this.fb.group({
+    doc_number: [
+      '',
+      [
+        Validators.required,
+        Validators.maxLength(100),
+        Validators.pattern(/^[A-Z0-9]{2}-\d{4}-\d{2}$/), // hoặc /^[A-Z]{2}-\d{4}-\d{2}$/
+      ],
+    ],
     doc_type: ['OUTBOUND' as DocType, Validators.required], // Đi (OUTBOUND) / Đến (INBOUND)
-    doc_number: ['', [Validators.required, Validators.maxLength(100)]],
+
     title: ['', [Validators.required, Validators.maxLength(500)]],
     content: ['', [Validators.required]],
     issued_at: [null as Date | null], // OUTBOUND
@@ -181,10 +218,9 @@ export class DocumentCreateComponent {
                 const pct = Math.min(100, Math.round((doneSoFar / totalBytes) * 100));
                 this.uploadProgress.set(pct);
               }
-              console.log('err');
             },
             error: (err) => {
-              reject(err), console.log('err-', err);
+              reject(err);
             },
             complete: () => {
               uploadedBytes += f.size;
@@ -212,22 +248,22 @@ export class DocumentCreateComponent {
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.errorMsg.set('Vui lòng điền đủ các trường bắt buộc.');
+      const msg = 'Vui lòng điền đủ các trường bắt buộc.';
+      this.errorMsg.set(msg);
+      this.snackbar.open(msg, 'Đóng', { duration: 3000 });
       return;
     }
 
     try {
       this.uploading.set(true);
 
-      // 1) Upload tất cả file trước → có publicUrl
       await this.uploadAllSelected();
 
-      // 2) Chuẩn hoá JSON đúng tên field BE mong
       const v = this.form.value;
       const type = v.doc_type as DocType;
 
       const body: any = {
-        type, // 👈 thêm rõ loại
+        type,
         number: v.doc_number?.trim(),
         title: v.title?.trim(),
         content: v.content?.trim(),
@@ -240,18 +276,17 @@ export class DocumentCreateComponent {
       };
 
       if (type === 'OUTBOUND') {
-        body.issued_at = this.toDateStr(v.issued_at); // snake_case
+        body.issued_at = this.toDateStr(v.issued_at);
         body.recipient_unit = v.recipient_unit?.trim();
       } else {
         body.received_at = this.toDateStr(v.received_at);
         body.sender_unit = v.sender_unit?.trim();
       }
 
-      // Gửi JSON thuần
       await firstValueFrom(this.auth.createDocument(body));
 
       this.uploading.set(false);
-      alert('Tạo văn bản thành công!');
+      this.snackbar.open('Tạo văn bản thành công!', 'Đóng', { duration: 2500 });
       this.form.reset({ doc_type: 'OUTBOUND' });
       this.files.set([]);
       this.uploaded.set([]);
@@ -259,10 +294,31 @@ export class DocumentCreateComponent {
     } catch (err: any) {
       this.uploading.set(false);
       this.uploadProgress.set(null);
-      console.error('Create document error:', err);
-      const msg =
-        err?.error?.error || err?.error?.message || err?.message || `Lỗi ${err?.status ?? ''}`;
+
+      const raw = err?.error?.error || err?.error?.message || '';
+      // ví dụ BE nối bằng dấu '; ' như "number không hợp lệ; receivedAt phải yyyy-MM-dd"
+      if (err?.status === 400 && typeof raw === 'string') {
+        const lower = raw.toLowerCase();
+        if (lower.includes('number')) {
+          this.form.get('doc_number')?.setErrors({ server: true });
+        }
+        if (lower.includes('issuedat') || lower.includes('issued_at')) {
+          this.form.get('issued_at')?.setErrors({ server: true });
+        }
+        if (lower.includes('receivedat') || lower.includes('received_at')) {
+          this.form.get('received_at')?.setErrors({ server: true });
+        }
+        if (lower.includes('recipient')) {
+          this.form.get('recipient_unit')?.setErrors({ server: true });
+        }
+        if (lower.includes('sender')) {
+          this.form.get('sender_unit')?.setErrors({ server: true });
+        }
+      }
+
+      const msg = this.parseError(err);
       this.errorMsg.set(msg);
+      this.snackbar.open(msg, 'Đóng', { duration: 4000 });
     }
   }
 

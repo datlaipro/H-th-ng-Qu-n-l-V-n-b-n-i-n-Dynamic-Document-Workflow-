@@ -1,6 +1,6 @@
 package com.github.datlaipro.docflow.api.auth.repo;
 
-import com.github.datlaipro.docflow.api.auth.infra.Db;
+import infra.Db;
 
 import java.sql.*;
 

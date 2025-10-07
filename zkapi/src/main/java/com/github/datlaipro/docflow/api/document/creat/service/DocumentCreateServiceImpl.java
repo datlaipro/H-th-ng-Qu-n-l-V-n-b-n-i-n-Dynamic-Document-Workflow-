@@ -1,10 +1,11 @@
 package com.github.datlaipro.docflow.api.document.creat.service;
 
-import com.github.datlaipro.docflow.api.document.creat.AuthGuard;
+import com.github.datlaipro.docflow.api.document.creat.AuthGuard.AuthGuard;
 import com.github.datlaipro.docflow.api.document.creat.dto.DocumentReqIN;
 import com.github.datlaipro.docflow.api.document.creat.dto.DocumentReqOUT;
 import com.github.datlaipro.docflow.api.document.creat.error.DocumentErrorMapper;
 import com.github.datlaipro.docflow.api.document.creat.error.DocumentValidationException;
+
 import com.github.datlaipro.docflow.api.document.creat.repo.DocumentRepo;
 import com.github.datlaipro.docflow.api.document.creat.repo.DocumentRepoImpl;
 

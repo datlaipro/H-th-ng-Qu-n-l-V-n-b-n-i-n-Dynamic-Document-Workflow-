@@ -4,12 +4,7 @@ import com.github.datlaipro.docflow.api.auth.util.JsonUtil;
 import com.github.datlaipro.docflow.api.shared.error.AppException;
 import com.github.datlaipro.docflow.api.shared.error.ErrorCode;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -19,12 +14,6 @@ import java.util.logging.Logger;
 public class GlobalErrorFilter implements Filter {
     private static final Logger LOG = Logger.getLogger(GlobalErrorFilter.class.getName());
 
-    static class Msg {
-        public String code;
-        public String message;
-        Msg(String c, String m){ code = c; message = m; }
-    }
-
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         // no-op
@@ -33,32 +22,48 @@ public class GlobalErrorFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-
-        HttpServletResponse resp = (HttpServletResponse) response;
+        final HttpServletResponse resp = (HttpServletResponse) response;
 
         try {
             chain.doFilter(request, response);
 
         } catch (AppException ae) {
+            // Ví dụ: chưa đăng nhập/không đủ quyền/limit...
             LOG.log(Level.INFO, "[APP_ERROR] " + ae.getCode() + " " + ae.getMessage(), ae);
-            if (ae.getCode() == ErrorCode.TOO_MANY_ATTEMPTS && ae.getRetryAfterSeconds() != null) {
-                resp.setHeader("Retry-After", String.valueOf(ae.getRetryAfterSeconds()));
+            if (!resp.isCommitted()) {
+                resp.reset();
+                if (ae.getCode() == ErrorCode.TOO_MANY_ATTEMPTS && ae.getRetryAfterSeconds() != null) {
+                    resp.setHeader("Retry-After", String.valueOf(ae.getRetryAfterSeconds()));
+                }
+                // ĐẢM BẢO set status đúng (401/403/429... tuỳ ae.getHttpStatus())
+                JsonUtil.json(resp, ae.getHttpStatus(),
+                        new Msg(ae.getCode().name().toLowerCase(), ae.getMessage()));
             }
-            JsonUtil.json(resp, ae.getHttpStatus(),
-                    new Msg(ae.getCode().name().toLowerCase(), ae.getMessage()));
+            return; // RẤT QUAN TRỌNG: dừng tại đây, không chạy tiếp
 
-        } catch (Exception e) {
-            // Phân loại trong khối catch chung
-            Throwable root = rootCause(e);
-            if (root instanceof SQLException) {
-                LOG.log(Level.SEVERE, "[DB_ERROR] " + root.getMessage(), e);
-                JsonUtil.json(resp, ErrorCode.DATABASE_ERROR.httpStatus,
-                        new Msg("database_error", "Database error"));
-            } else {
-                LOG.log(Level.SEVERE, "[SERVER_ERROR] " + e.getMessage(), e);
-                JsonUtil.json(resp, ErrorCode.SERVER_ERROR.httpStatus,
-                        new Msg("server_error", "Unexpected server error"));
+        } catch (IllegalArgumentException iae) {
+            LOG.log(Level.WARNING, "[BAD_REQUEST] " + iae.getMessage(), iae);
+            if (!resp.isCommitted()) {
+                resp.reset();
+                JsonUtil.json(resp, HttpServletResponse.SC_BAD_REQUEST,
+                        new Msg("bad_request", iae.getMessage()));
             }
+            return;
+
+        } catch (Throwable e) {
+            // Phân loại lỗi chung
+            Throwable root = rootCause(e);
+            LOG.log(Level.SEVERE, "[UNHANDLED] " + root.getClass().getSimpleName() + ": " + root.getMessage(), e);
+            int status = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+            String code = "internal_error";
+            if (root instanceof SQLException) {
+                code = "db_error";
+            }
+            if (!resp.isCommitted()) {
+                resp.reset();
+                JsonUtil.json(resp, status, new Msg(code, "Internal error"));
+            }
+            return;
         }
     }
 
@@ -71,5 +76,12 @@ public class GlobalErrorFilter implements Filter {
         Throwable r = t;
         while (r.getCause() != null && r.getCause() != r) r = r.getCause();
         return r;
+    }
+
+    // POJO thông điệp lỗi
+    public static class Msg {
+        public String code;
+        public String message;
+        public Msg(String code, String message) { this.code = code; this.message = message; }
     }
 }

@@ -1,10 +1,16 @@
+import "./chunk-GWFLKVBH.js";
+import {
+  MatCommonModule
+} from "./chunk-UTB2XLNV.js";
 import {
   _DisposeViewRepeaterStrategy
 } from "./chunk-YQTMVYBE.js";
+import "./chunk-2WBYOXEK.js";
 import {
   ScrollingModule,
   ViewportRuler
-} from "./chunk-UG4MMN2M.js";
+} from "./chunk-5JQHIHNF.js";
+import "./chunk-7UJZXIJQ.js";
 import {
   DataSource,
   _RecycleViewRepeaterStrategy,
@@ -12,12 +18,6 @@ import {
   _ViewRepeaterOperation,
   isDataSource
 } from "./chunk-RMFGBTI6.js";
-import "./chunk-GWFLKVBH.js";
-import "./chunk-7UJZXIJQ.js";
-import {
-  MatCommonModule
-} from "./chunk-MHYSEQK5.js";
-import "./chunk-2WBYOXEK.js";
 import {
   Directionality
 } from "./chunk-B6Q77AK3.js";
@@ -83,11 +83,11 @@ import {
   inject,
   ɵɵdefineInjector
 } from "./chunk-5YKDIGWC.js";
+import "./chunk-JRFR6BLO.js";
 import {
   isObservable,
   merge
 } from "./chunk-HWYXSU2G.js";
-import "./chunk-JRFR6BLO.js";
 import {
   BehaviorSubject,
   Subject,

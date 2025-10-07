@@ -1,10 +1,38 @@
-<div class="detail">
+<div class="detail" *ngIf="doc(); else loadingTpl">
   <!-- Header -->
   <div class="detail__header">
-    <h2 class="detail__title">{{ data.soVanBan }}</h2>
+    <div class="title-wrap">
+      <h2 class="detail__title">
+        {{ doc()!.doc_number }}
+      </h2>
+
+      <div class="title__meta">
+        <mat-chip-set>
+          <mat-chip [ngClass]="isOutbound() ? 'tone-out' : 'tone-in'">
+            <mat-icon>import_export</mat-icon>
+            {{ isOutbound() ? 'Văn bản Đi' : 'Văn bản Đến' }}
+          </mat-chip>
+
+          <mat-chip [ngClass]="statusClass(doc()?.status)">
+            <mat-icon>flag</mat-icon>
+            {{ prettyStatus(doc()?.status) }}
+          </mat-chip>
+
+          <mat-chip>
+            <mat-icon>schedule</mat-icon>
+            {{ (doc()!.created_at | date:'dd/MM/yyyy HH:mm') || '' }}
+          </mat-chip>
+        </mat-chip-set>
+      </div>
+
+      <div class="title__sub">
+        <mat-icon>subject</mat-icon>
+        <span class="title__text">{{ doc()!.title }}</span>
+      </div>
+    </div>
 
     <div class="detail__actions">
-      <button mat-raised-button color="primary" (click)="approve()">
+      <button mat-stroked-button color="primary" (click)="approve()" [disabled]="doc()?.status==='APPROVED'">
         <mat-icon>check_circle</mat-icon>
         Phê duyệt
       </button>
@@ -19,7 +47,7 @@
         Sửa
       </button>
 
-      <button mat-stroked-button color="warn" (click)="reject()">
+      <button mat-stroked-button color="warn" (click)="reject()" [disabled]="doc()?.status==='REJECTED'">
         <mat-icon>cancel</mat-icon>
         Từ chối
       </button>
@@ -30,168 +58,138 @@
     </div>
   </div>
 
-  <!-- Thông tin chung -->
+  <!-- Thông tin chính -->
   <section class="panel">
     <h3 class="panel__title">
       <mat-icon class="mr">info</mat-icon> Thông tin chung
     </h3>
 
     <div class="info-grid">
-      <!-- Cột trái -->
       <div class="info-col">
         <div class="row">
-          <div class="label">Số văn bản:</div>
-          <div class="value linklike">{{ data.soVanBan }}</div>
+          <div class="label">Số hiệu</div>
+          <div class="value linklike">{{ doc()!.doc_number }}</div>
         </div>
 
         <div class="row">
-          <div class="label">Nơi nhận:</div>
-          <div class="value linklike">{{ data.noiNhan }}</div>
+          <div class="label">{{ unitLabel() }}</div>
+          <div class="value linklike">{{ unitValue() || '—' }}</div>
         </div>
 
         <div class="row">
-          <div class="label">Người ký:</div>
-          <div class="value linklike">{{ data.nguoiKy }}</div>
+          <div class="label">{{ dateLabel() }}</div>
+          <div class="value linklike">
+            {{ (dateValue() | date:'dd/MM/yyyy') || '—' }}
+          </div>
         </div>
 
         <div class="row">
-          <div class="label">Ngày ký:</div>
-          <div class="value linklike">{{ data.ngayKy }}</div>
+          <div class="label">Người khởi tạo</div>
+          <div class="value brand">#{{ doc()!.originator_id }}</div>
         </div>
 
         <div class="row">
-          <div class="label">Bộ phận phát hành:</div>
-          <div class="value linklike">{{ data.boPhanPhatHanh }}</div>
-        </div>
-
-        <div class="row">
-          <div class="label">Ngày phát hành:</div>
-          <div class="value linklike">{{ data.ngayPhatHanh }}</div>
+          <div class="label">Người xử lý hiện tại</div>
+          <div class="value">
+            <span class="brand">#{{ doc()!.current_handler_id || '—' }}</span>
+            <a class="muted-action" href="javascript:void(0)">Thay đổi người xử lý?</a>
+          </div>
         </div>
       </div>
 
-      <!-- Cột phải -->
       <div class="info-col">
         <div class="row">
-          <div class="label">Số trang:</div>
-          <div class="value linklike">{{ data.soTrang }}</div>
+          <div class="label">Trạng thái</div>
+          <div class="value">
+            <span [ngClass]="statusClass(doc()?.status)">{{ prettyStatus(doc()?.status) }}</span>
+          </div>
         </div>
 
         <div class="row">
-          <div class="label">Số lượng văn bản:</div>
-          <div class="value linklike">{{ data.soLuongVanBan }}</div>
+          <div class="label">Tạo lúc</div>
+          <div class="value linklike">{{ doc()!.created_at | date:'dd/MM/yyyy HH:mm' }}</div>
         </div>
 
         <div class="row">
-          <div class="label">Mức độ bảo mật:</div>
-          <div class="value high">{{ data.mucDoBaoMat }}</div>
-        </div>
-
-        <div class="row">
-          <div class="label">Mức độ khẩn cấp:</div>
-          <div class="value linklike">{{ data.mucDoKhanCap }}</div>
-        </div>
-
-        <div class="row">
-          <div class="label">Ngày hiệu lực:</div>
-          <div class="value linklike">{{ data.ngayHieuLuc }}</div>
-        </div>
-
-        <div class="row">
-          <div class="label">Ngày hết hiệu lực:</div>
-          <div class="value linklike">{{ data.ngayHetHieuLuc }}</div>
+          <div class="label">Cập nhật</div>
+          <div class="value linklike">{{ doc()!.updated_at | date:'dd/MM/yyyy HH:mm' }}</div>
         </div>
       </div>
     </div>
 
     <mat-divider></mat-divider>
 
-    <!-- Khối phải: meta bổ sung -->
+    <!-- Nội dung -->
     <div class="meta">
       <div class="row">
-        <div class="label">Loại văn bản</div>
-        <div class="value linklike">{{ data.loaiVanBan }}</div>
-      </div>
-
-      <div class="row">
-        <div class="label">Người xử lý</div>
-        <div class="value">
-          <span class="brand">{{ data.nguoiXuLy }}</span>
-          <a class="muted-action" href="javascript:void(0)">Bạn muốn thay đổi người xử lý?</a>
-        </div>
-      </div>
-
-      <!-- ĐÃ BỎ "Vị trí lưu trữ" & "Người theo dõi" theo yêu cầu -->
-
-      <div class="row">
-        <div class="label">Tình trạng xử lý</div>
-        <div class="value linklike">{{ data.tinhTrangXuLy }}</div>
-      </div>
-
-      <div class="row">
-        <div class="label">Người tạo</div>
-        <div class="value brand">{{ data.nguoiTao }}</div>
-      </div>
-
-      <div class="row">
-        <div class="label">Ngày tạo</div>
-        <div class="value linklike">{{ data.ngayTao }}</div>
+        <div class="label">Nội dung</div>
+        <div class="value content">{{ doc()!.content }}</div>
       </div>
     </div>
   </section>
 
-  <!-- Accordion -->
+  <!-- Accordion: Đính kèm & Lịch sử -->
   <mat-accordion class="accordion">
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <span>Trích yếu</span>
-      </mat-expansion-panel-header>
-      <div class="panel-body">{{ data.trichYeu || '—' }}</div>
-    </mat-expansion-panel>
-
-    <mat-expansion-panel>
-      <mat-expansion-panel-header>
-        <span>Lý do</span>
-      </mat-expansion-panel-header>
-      <div class="panel-body">{{ data.lyDo || '—' }}</div>
-    </mat-expansion-panel>
-
     <mat-expansion-panel [expanded]="true">
       <mat-expansion-panel-header>
-        <span>Tập tin đính kèm ({{ data.attachments?.length || 0 }} tệp)</span>
+        <span>Tập tin đính kèm ({{ atts().length }} tệp)</span>
       </mat-expansion-panel-header>
 
-      <div class="attachments">
-        <div
-          class="att"
-          *ngFor="let f of data.attachments"
-        >
+      <div class="attachments" *ngIf="atts().length; else emptyAtt">
+        <div class="att" *ngFor="let f of atts()">
           <div class="att__icon">
             <mat-icon>insert_drive_file</mat-icon>
           </div>
           <div class="att__info">
-            <div class="att__name">{{ f.fileName }}</div>
+            <div class="att__name" [matTooltip]="f.file_name">{{ f.file_name }}</div>
             <div class="att__meta">
-              {{ f.mimeType }} · {{ prettySize(f.sizeBytes) }}
+              {{ f.mime_type || 'application/octet-stream' }} · {{ prettySize(f.size_bytes) }}
             </div>
           </div>
           <div class="att__actions">
-            <button mat-stroked-button (click)="download(f)">
+            <button mat-stroked-button (click)="openFile(f)">
               <mat-icon>download</mat-icon>
-              Tải xuống
+              Mở / Tải xuống
             </button>
           </div>
         </div>
+      </div>
+      <ng-template #emptyAtt>
+        <div class="empty">Chưa có tệp đính kèm.</div>
+      </ng-template>
+    </mat-expansion-panel>
 
-        <div class="att__more">
-          <button mat-button type="button">
-            Thêm liên kết
-          </button>
-          <button mat-button type="button">
-            Thêm tệp
-          </button>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <span>Dòng thời gian xử lý</span>
+      </mat-expansion-panel-header>
+
+      <div class="timeline" *ngIf="timeline().length; else emptyTl">
+        <div class="tl-item" *ngFor="let h of timeline()">
+          <div class="tl-dot"></div>
+          <div class="tl-card">
+            <div class="tl-head">
+              <span class="tl-actor">{{ h.actor }}</span>
+              <span class="tl-time">{{ h.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="tl-action">
+              <mat-icon>arrow_right_alt</mat-icon>
+              <strong>{{ prettyAction(h.action) }}</strong>
+              <ng-container *ngIf="h.forwarded_to">&nbsp;→&nbsp;<span class="brand">{{ h.forwarded_to }}</span></ng-container>
+            </div>
+            <div class="tl-note" *ngIf="h.note">{{ h.note }}</div>
+          </div>
         </div>
       </div>
+      <ng-template #emptyTl>
+        <div class="empty">Chưa có lịch sử.</div>
+      </ng-template>
     </mat-expansion-panel>
   </mat-accordion>
 </div>
+
+<ng-template #loadingTpl>
+  <div class="loading">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  </div>
+</ng-template>

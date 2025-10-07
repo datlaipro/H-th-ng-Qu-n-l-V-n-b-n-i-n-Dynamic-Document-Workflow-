@@ -1,137 +1,202 @@
-import { Component, Input, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, Input, OnInit, inject, computed, signal } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { DomSanitizer } from '@angular/platform-browser';
-import { HttpClient } from '@angular/common/http';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
-export interface Attachment {
+export type DocType = 'OUTBOUND' | 'INBOUND';
+export type DocStatus = 'PENDING' | 'IN_PROGRESS' | 'APPROVED' | 'REJECTED' | 'COMPLETED';
+
+export interface DocAttachment {
   id: number;
-  fileName: string;
-  mimeType: string;
-  sizeBytes: number;
-  url?: string; // link trực tiếp (nếu có)
-  downloadApi?: string; // endpoint tải (nếu cần stream blob)
+  document_id: number;
+  file_name: string;
+  file_url: string;         // lưu trực tiếp R2/S3 URL
+  mime_type?: string;
+  size_bytes?: number;
+  uploaded_by?: number;
+  uploaded_at?: string;
 }
 
-export interface DocumentDetail {
-  soVanBan: string;
-  soTrang: number;
-  soLuongVanBan: number;
-  noiNhan: string;
-  mucDoBaoMat: 'Thấp' | 'Bình thường' | 'Cao';
-  nguoiKy: string;
-  mucDoKhanCap: 'Bình thường' | 'Khẩn' | 'Khẩn cấp';
-  ngayKy: string; // ISO hoặc dd/MM/yyyy
-  ngayHieuLuc: string;
-  ngayHetHieuLuc: string;
-  boPhanPhatHanh: string;
-  ngayPhatHanh: string;
+export interface DocumentRow {
+  id: number;
+  doc_type: DocType;                // Đi/Đến
+  doc_number: string;               // Số hiệu
+  title: string;
+  content: string;
+  status: DocStatus;
+  originator_id: number;
+  current_handler_id?: number | null;
+  issued_at?: string | null;        // OUTBOUND
+  received_at?: string | null;      // INBOUND
+  sender_unit?: string | null;      // INBOUND
+  recipient_unit?: string | null;   // OUTBOUND
+  created_at: string;
+  updated_at: string;
+}
 
-  loaiVanBan: string;
-  nguoiXuLy: string;
-  tinhTrangXuLy: string;
-  nguoiTao: string;
-  ngayTao: string;
-
-  trichYeu?: string;
-  lyDo?: string;
-  attachments?: Attachment[];
+export interface TimelineRow {
+  history_id: number;
+  created_at: string;
+  actor: string;
+  action: 'CREATE'|'SUBMIT'|'APPROVE'|'REJECT'|'FORWARD'|'COMMENT'|'UPDATE_STATUS';
+  forwarded_to?: string | null;
+  note?: string | null;
 }
 
 @Component({
   selector: 'app-document-detail',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatDividerModule, MatExpansionModule],
+  imports: [
+    CommonModule,
+    DatePipe,
+    MatButtonModule, MatIconModule, MatDividerModule,
+    MatChipsModule, MatExpansionModule, MatTooltipModule,
+    MatProgressBarModule,
+  ],
   templateUrl: './document-detail.component.html',
   styleUrls: ['./document-detail.component.css'],
 })
-export class DocumentDetailComponent {
+export class DocumentDetailComponent implements OnInit {
   private http = inject(HttpClient);
-  private sanitizer = inject(DomSanitizer);
 
-  // Nhận dữ liệu từ cha; để demo có thể gán mặc định
-  @Input() data: DocumentDetail = {
-    soVanBan: '01',
-    soTrang: 15,
-    soLuongVanBan: 2,
-    noiNhan: 'ngõ 15 duy tân, Cầu Giấy, Hà Nội',
-    mucDoBaoMat: 'Cao',
-    nguoiKy: 'Quản trị hệ thống',
-    mucDoKhanCap: 'Bình thường',
-    ngayKy: '18/12/2020',
-    ngayHieuLuc: '18/12/2020',
-    ngayHetHieuLuc: '22/12/2020',
-    boPhanPhatHanh: 'Kinh doanh',
-    ngayPhatHanh: '20/12/2020',
+  /** API base tuỳ dự án */
+  @Input() apiBase = '/api';
 
-    loaiVanBan: 'Đề Nghị',
-    nguoiXuLy: 'FW.SPMB',
-    tinhTrangXuLy: 'Dự thảo',
-    nguoiTao: 'FW.SPMB',
-    ngayTao: '20/12/2020',
+  /** Nhận id từ cha (router/parent) hoặc truyền sẵn object */
+  @Input() id?: number;
 
-    trichYeu: 'Đề nghị phê duyệt phương án… (nội dung mô tả ngắn gọn trích yếu tài liệu).',
-    lyDo: 'Cần triển khai trước ngày 25/12 để đảm bảo tiến độ chiến dịch cuối năm.',
-    attachments: [
-      {
-        id: 1,
-        fileName: 'PhuLuc_01.xlsx',
-        mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        sizeBytes: 153600,
-        url: 'https://example.com/files/PhuLuc_01.xlsx',
-      },
-    ],
-  };
+  /** Cho phép truyền sẵn dữ liệu (nếu đã có ở parent để tránh gọi API lần nữa) */
+  @Input() initialData?: DocumentRow;
 
-  // ====== Hành động ======
-  approve() {
-    console.log('Phê duyệt', this.data.soVanBan);
-  }
-  reject() {
-    console.log('Từ chối', this.data.soVanBan);
-  }
-  forward() {
-    console.log('Chuyển tiếp', this.data.soVanBan);
-  }
-  edit() {
-    console.log('Sửa', this.data.soVanBan);
-  }
-  remove() {
-    console.log('Xóa', this.data.soVanBan);
+  loading = signal(true);
+  doc = signal<DocumentRow | null>(null);
+  atts = signal<DocAttachment[]>([]);
+  timeline = signal<TimelineRow[]>([]);
+
+  // ====== Derived UI ======
+  isOutbound = computed(() => this.doc()?.doc_type === 'OUTBOUND');
+  unitLabel = computed(() => this.isOutbound() ? 'Nơi nhận' : 'Nơi gửi');
+  unitValue = computed(() => this.isOutbound() ? this.doc()?.recipient_unit : this.doc()?.sender_unit);
+
+  dateLabel = computed(() => this.isOutbound() ? 'Ngày ban hành' : 'Ngày nhận');
+  dateValue = computed(() => this.isOutbound() ? this.doc()?.issued_at : this.doc()?.received_at);
+
+  // badge màu theo trạng thái
+  statusClass(status?: DocStatus) {
+    switch (status) {
+      case 'APPROVED': return 'badge badge--ok';
+      case 'REJECTED': return 'badge badge--warn';
+      case 'IN_PROGRESS': return 'badge badge--info';
+      case 'COMPLETED': return 'badge badge--done';
+      default: return 'badge';
+    }
   }
 
-  // ====== Tải tệp đính kèm ======
-  // Ưu tiên dùng link trực tiếp nếu có; nếu chỉ có API -> tải blob
-  download(att: Attachment) {
-    if (att.url) {
-      // Mở link trực tiếp (để tải), an toàn hơn là dùng thẻ <a> trong template
-      window.open(att.url, '_blank');
+  ngOnInit(): void {
+    if (this.initialData) {
+      this.doc.set(this.initialData);
+      this.fetchChildren(this.initialData.id);
+      this.loading.set(false);
       return;
     }
-    if (att.downloadApi) {
-      this.http.get(att.downloadApi, { responseType: 'blob' }).subscribe((blob) => {
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = att.fileName;
-        a.click();
-        URL.revokeObjectURL(a.href);
-      });
+    if (!this.id) {
+      this.loading.set(false);
+      return;
+    }
+    this.load(this.id);
+  }
+
+  private load(id: number) {
+    this.loading.set(true);
+    // BE gợi ý:
+    // GET /api/documents/:id
+    // GET /api/documents/:id/attachments
+    // GET /api/documents/:id/timeline
+    this.http.get<DocumentRow>(`${this.apiBase}/documents/${id}`, { withCredentials: true }).subscribe({
+      next: (d) => {
+        this.doc.set(d);
+        this.fetchChildren(d.id);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
+    });
+  }
+
+  private fetchChildren(documentId: number) {
+    this.http.get<DocAttachment[]>(`${this.apiBase}/documents/${documentId}/attachments`, { withCredentials: true })
+      .subscribe({ next: (rows) => this.atts.set(rows || []) });
+
+    this.http.get<TimelineRow[]>(`${this.apiBase}/documents/${documentId}/timeline`, { withCredentials: true })
+      .subscribe({ next: (rows) => this.timeline.set(rows || []) });
+  }
+
+  // ====== Actions (chỉ minh hoạ; gọi API thật theo BE của bạn) ======
+  approve() {
+    const id = this.doc()?.id; if (!id) return;
+    this.http.post(`${this.apiBase}/documents/${id}/approve`, {}, { withCredentials: true })
+      .subscribe(() => this.load(id));
+  }
+  reject() {
+    const id = this.doc()?.id; if (!id) return;
+    this.http.post(`${this.apiBase}/documents/${id}/reject`, {}, { withCredentials: true })
+      .subscribe(() => this.load(id));
+  }
+  forward() {
+    const id = this.doc()?.id; if (!id) return;
+    // ví dụ chuyển cho userId=1; thực tế mở dialog chọn người
+    this.http.post(`${this.apiBase}/documents/${id}/forward`, { toUserId: 1 }, { withCredentials: true })
+      .subscribe(() => this.load(id));
+  }
+  edit() {
+    // điều hướng router tới trang chỉnh sửa
+    console.log('Edit doc', this.doc()?.id);
+  }
+  remove() {
+    const id = this.doc()?.id; if (!id) return;
+    this.http.delete(`${this.apiBase}/documents/${id}`, { withCredentials: true })
+      .subscribe(() => console.log('Removed', id));
+  }
+
+  // ====== Helpers ======
+  openFile(att: DocAttachment) {
+    if (!att.file_url) return;
+    window.open(att.file_url, '_blank');
+  }
+
+  prettySize(bytes?: number) {
+    if (bytes === undefined || bytes === null) return '';
+    const units = ['B','KB','MB','GB','TB'];
+    let i = 0, n = bytes;
+    while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+    return `${n.toFixed(1)} ${units[i]}`;
+  }
+
+  prettyStatus(s?: DocStatus) {
+    switch (s) {
+      case 'PENDING': return 'Chờ xử lý';
+      case 'IN_PROGRESS': return 'Đang xử lý';
+      case 'APPROVED': return 'Đã phê duyệt';
+      case 'REJECTED': return 'Từ chối';
+      case 'COMPLETED': return 'Hoàn tất';
+      default: return s || '';
     }
   }
 
-  // Formatter kích thước file
-  prettySize(bytes: number) {
-    if (!bytes && bytes !== 0) return '';
-    const units = ['B', 'KB', 'MB', 'GB'];
-    let i = 0,
-      n = bytes;
-    while (n >= 1024 && i < units.length - 1) {
-      n /= 1024;
-      i++;
+  prettyAction(a: TimelineRow['action']) {
+    switch (a) {
+      case 'CREATE': return 'Tạo';
+      case 'SUBMIT': return 'Trình';
+      case 'APPROVE': return 'Phê duyệt';
+      case 'REJECT': return 'Từ chối';
+      case 'FORWARD': return 'Chuyển tiếp';
+      case 'COMMENT': return 'Ghi chú';
+      case 'UPDATE_STATUS': return 'Cập nhật trạng thái';
     }
-    return `${n.toFixed(1)} ${units[i]}`;
   }
 }

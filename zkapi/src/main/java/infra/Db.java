@@ -1,4 +1,4 @@
-package com.github.datlaipro.docflow.api.auth.infra;
+package infra;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

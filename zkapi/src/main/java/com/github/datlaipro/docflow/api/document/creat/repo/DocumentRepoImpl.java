@@ -1,6 +1,6 @@
 package com.github.datlaipro.docflow.api.document.creat.repo;
 
-import com.github.datlaipro.docflow.api.auth.infra.Db;
+import infra.Db;
 import com.github.datlaipro.docflow.api.document.creat.repo.DocumentRepo.Attachment;
 
 import java.sql.*;
@@ -66,7 +66,7 @@ public class DocumentRepoImpl implements DocumentRepo {
         try {
             // Db.get() có thể throws Exception -> catch và bọc lại
             try {
-                c = com.github.datlaipro.docflow.api.auth.infra.Db.get();
+                c = infra.Db.get();
             } catch (Exception e) {
                 throw new SQLException("Failed to obtain DB connection", e);
             }

@@ -1,4 +1,4 @@
-package com.github.datlaipro.docflow.api.document.creat;
+package com.github.datlaipro.docflow.api.document.creat.AuthGuard;
 
 import com.github.datlaipro.docflow.api.auth.entity.User;
 import com.github.datlaipro.docflow.api.auth.service.AuthService;

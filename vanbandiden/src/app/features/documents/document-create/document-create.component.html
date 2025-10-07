@@ -2,11 +2,13 @@
   <div class="card">
     <div class="card-head">
       <div class="left">
-        <button type="button"
-                mat-icon-button
-                class="btn-back"
-                matTooltip="Về trang chủ"
-                (click)="goBack()">
+        <button
+          type="button"
+          mat-icon-button
+          class="btn-back"
+          matTooltip="Về trang chủ"
+          (click)="goBack()"
+        >
           <mat-icon>arrow_back</mat-icon>
         </button>
         <h2>Tạo mới văn bản</h2>
@@ -15,6 +17,12 @@
     </div>
 
     <form [formGroup]="form" (ngSubmit)="submit()" class="form-grid">
+      <!-- Banner lỗi tổng -->
+      <div class="alert error full" *ngIf="errorMsg()">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMsg() }}</span>
+      </div>
+
       <!-- Loại văn bản -->
       <mat-form-field appearance="outline">
         <mat-label>Loại văn bản</mat-label>
@@ -25,57 +33,77 @@
       </mat-form-field>
 
       <!-- Số hiệu -->
+
       <mat-form-field appearance="outline">
         <mat-label>Số hiệu văn bản</mat-label>
-        <input matInput formControlName="doc_number" placeholder="VD: OB-2025-101 / IB-2025-001">
-        <mat-error *ngIf="form.get('doc_number')?.hasError('required')">Bắt buộc</mat-error>
+        <input matInput formControlName="doc_number" placeholder="OB-2025-01" />
+        <mat-error *ngIf="form.get('doc_number')?.hasError('required')">
+          Bắt buộc nhập số hiệu.
+        </mat-error>
+        <mat-error *ngIf="form.get('doc_number')?.hasError('maxlength')">
+          Tối đa 100 ký tự.
+        </mat-error>
+        <mat-error *ngIf="form.get('doc_number')?.hasError('pattern')">
+          Định dạng phải như <b>AB-2025-01</b>.
+        </mat-error>
       </mat-form-field>
 
       <!-- Tiêu đề -->
       <mat-form-field appearance="outline" class="full">
         <mat-label>Tiêu đề</mat-label>
-        <input matInput formControlName="title" placeholder="Nhập tiêu đề">
+        <input matInput formControlName="title" placeholder="Nhập tiêu đề" />
         <mat-error *ngIf="form.get('title')?.hasError('required')">Bắt buộc</mat-error>
       </mat-form-field>
 
       <!-- Nội dung -->
       <mat-form-field appearance="outline" class="full">
         <mat-label>Nội dung</mat-label>
-        <textarea matInput rows="6" formControlName="content" placeholder="Tóm tắt nội dung..."></textarea>
+        <textarea
+          matInput
+          rows="6"
+          formControlName="content"
+          placeholder="Tóm tắt nội dung..."
+        ></textarea>
         <mat-error *ngIf="form.get('content')?.hasError('required')">Bắt buộc</mat-error>
       </mat-form-field>
 
       <!-- Ngày: OUTBOUND -> issued_at / INBOUND -> received_at -->
-      <mat-form-field appearance="outline">
-        <mat-label *ngIf="docType() === 'OUTBOUND'">Ngày ban hành</mat-label>
-        <mat-label *ngIf="docType() === 'INBOUND'">Ngày nhận</mat-label>
-        <input matInput
-               [matDatepicker]="picker"
-               [formControlName]="docType() === 'OUTBOUND' ? 'issued_at' : 'received_at'">
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-datepicker #picker></mat-datepicker>
-
-        <mat-error *ngIf="docType() === 'OUTBOUND' && form.get('issued_at')?.hasError('required')">
-          Bắt buộc cho văn bản Đi
-        </mat-error>
-        <mat-error *ngIf="docType() === 'INBOUND' && form.get('received_at')?.hasError('required')">
-          Bắt buộc cho văn bản Đến
+      <!-- Ngày -->
+      <mat-form-field appearance="outline" *ngIf="docType() === 'OUTBOUND'">
+        <mat-label>Ngày ban hành</mat-label>
+        <input matInput [matDatepicker]="dp1" formControlName="issued_at" />
+        <mat-datepicker-toggle matSuffix [for]="dp1"></mat-datepicker-toggle>
+        <mat-datepicker #dp1></mat-datepicker>
+        <mat-error *ngIf="form.get('issued_at')?.hasError('required')">
+          Bắt buộc chọn ngày ban hành.
         </mat-error>
       </mat-form-field>
 
-      <!-- Đơn vị: OUTBOUND -> recipient_unit / INBOUND -> sender_unit -->
-      <mat-form-field appearance="outline">
-        <mat-label *ngIf="docType() === 'OUTBOUND'">Nơi nhận</mat-label>
-        <mat-label *ngIf="docType() === 'INBOUND'">Nơi gửi</mat-label>
-        <input matInput
-               [formControlName]="docType() === 'OUTBOUND' ? 'recipient_unit' : 'sender_unit'"
-               [placeholder]="docType() === 'OUTBOUND' ? 'VD: Phòng Hành chính' : 'VD: Sở Y tế'">
-        <mat-error *ngIf="docType() === 'OUTBOUND' && form.get('recipient_unit')?.hasError('required')">
-          Bắt buộc cho văn bản Đi
-        </mat-error>
-        <mat-error *ngIf="docType() === 'INBOUND' && form.get('sender_unit')?.hasError('required')">
-          Bắt buộc cho văn bản Đến
-        </mat-error>
+      <mat-form-field appearance="outline" *ngIf="docType() === 'INBOUND'">
+        <mat-label>Ngày nhận</mat-label>
+        <input matInput [matDatepicker]="p2" formControlName="received_at" />
+        <mat-datepicker-toggle matSuffix [for]="p2"></mat-datepicker-toggle>
+        <mat-datepicker #p2></mat-datepicker>
+        <mat-error *ngIf="form.get('received_at')?.hasError('required')"
+          >Bắt buộc cho văn bản Đến</mat-error
+        >
+      </mat-form-field>
+
+      <!-- Đơn vị -->
+      <mat-form-field appearance="outline" *ngIf="docType() === 'OUTBOUND'">
+        <mat-label>Nơi nhận</mat-label>
+        <input matInput formControlName="recipient_unit" placeholder="VD: Phòng Hành chính" />
+        <mat-error *ngIf="form.get('recipient_unit')?.hasError('required')"
+          >Bắt buộc cho văn bản Đi</mat-error
+        >
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" *ngIf="docType() === 'INBOUND'">
+        <mat-label>Nơi gửi</mat-label>
+        <input matInput formControlName="sender_unit" placeholder="VD: Sở Y tế" />
+        <mat-error *ngIf="form.get('sender_unit')?.hasError('required')"
+          >Bắt buộc cho văn bản Đến</mat-error
+        >
       </mat-form-field>
 
       <mat-divider class="full"></mat-divider>
@@ -84,15 +112,24 @@
       <div class="files full">
         <div class="files-head">
           <h3>File đính kèm</h3>
-          <button type="button" mat-stroked-button (click)="filePicker.click()" matTooltip="Chọn nhiều file">
+          <button
+            type="button"
+            mat-stroked-button
+            (click)="filePicker.click()"
+            matTooltip="Chọn nhiều file"
+          >
             <mat-icon>upload_file</mat-icon>&nbsp;Chọn file
           </button>
-          <input #filePicker type="file" (change)="onPickFiles($event)" multiple hidden>
+          <input #filePicker type="file" (change)="onPickFiles($event)" multiple hidden />
         </div>
 
         <div class="chips" *ngIf="files().length">
           <mat-chip-listbox>
-            <mat-chip *ngFor="let f of files(); let i = index" [removable]="true" (removed)="removeFile(i)">
+            <mat-chip
+              *ngFor="let f of files(); let i = index"
+              [removable]="true"
+              (removed)="removeFile(i)"
+            >
               <mat-icon matChipAvatar>attach_file</mat-icon>
               {{ f.name }} ({{ f.size | number }} bytes)
               <button matChipRemove mat-icon-button aria-label="Xoá file">
@@ -102,12 +139,23 @@
           </mat-chip-listbox>
         </div>
 
-        <mat-progress-bar *ngIf="uploading()" mode="determinate" [value]="uploadProgress() ?? 0"></mat-progress-bar>
+        <mat-progress-bar
+          *ngIf="uploading()"
+          mode="determinate"
+          [value]="uploadProgress() ?? 0"
+        ></mat-progress-bar>
       </div>
+      <div class="actions full">
+        <div class="actions-left">
+          <button mat-stroked-button type="reset">Làm lại</button>
+        </div>
 
-       <div class="actions full">
-        <button mat-stroked-button type="reset">Làm lại</button>
-        <button mat-raised-button color="primary" type="submit" [disabled]="uploading()">Tạo văn bản</button>
+        <div class="actions-right">
+          <!-- (Nếu sau này bạn có thêm nút khác, cứ thả vào đây sẽ tự có gap) -->
+          <button mat-raised-button color="primary" type="submit" [disabled]="uploading()">
+            Tạo văn bản
+          </button>
+        </div>
       </div>
     </form>
   </div>
